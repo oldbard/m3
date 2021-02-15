@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Data;
 using GameData;
 using Gameplay.Animations;
 using Gameplay.Views;
@@ -22,7 +23,6 @@ namespace Gameplay.Controllers
         const string GridWidthKey = "GridWidth";
         const string GridHeightKey = "GridHeight";
         const string TilesVariationsKey = "TilesVariations";
-        const string MatchDurationKey = "MatchDuration";
 
         [SerializeField] Config _config;
         [SerializeField] GridViewController _gridView;
@@ -110,7 +110,7 @@ namespace Gameplay.Controllers
         {
             _inputManager.DisableInput();
 
-            var duration = PlayerPrefs.GetInt(MatchDurationKey, _config.GameDuration);
+            var duration = GamePersistenData.Instance.ConfigData.GameDuration;
 
             _animationsController = new AnimationsController(_config.LerpAnimationCurve);
 
@@ -214,7 +214,8 @@ namespace Gameplay.Controllers
 
                 // Checks if the game is running, if the player can interact and if a
                 // given amount of time has passed. If so, shows a hint to the player
-                if (_inputManager.CanDrag && _inputManager.TimeSinceLastInteraction > _config.TimeToShowHint)
+                if (_inputManager.CanDrag && _inputManager.TimeSinceLastInteraction >
+                    GamePersistenData.Instance.ConfigData.TimeToShowHint)
                 {
                     OnShowHint();
                     _inputManager.ResetLastInteraction();
@@ -251,7 +252,6 @@ namespace Gameplay.Controllers
         }
 
         #endregion
-
 
         #region Matching
 
@@ -334,7 +334,7 @@ namespace Gameplay.Controllers
             while(tiles.Count > 0)
             {
                 // Calculates the player score
-                Score += tiles.Count * _config.PointsPerTile;
+                Score += tiles.Count * GamePersistenData.Instance.ConfigData.PointsPerTile;
 
                 // Play a sound for the match and destruction
                 _soundsManager.PlayMatchClip();

@@ -1,38 +1,46 @@
 ﻿using PlayFab;
 using PlayFab.ClientModels;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-namespace Server
+namespace Client
 {
-    public class PlayFabLogin : MonoBehaviour
+    public class PlayFabLogin
     {
         #region Declarations
-
-        [SerializeField] Image _loginPanel;
-        [SerializeField] Button _loginButton;
-
-        string _userName;
+        public static readonly List<string> ContentTitleDataKeys = new List<string>
+        { 
+            "DestroyAnimationTime",
+            "DropAnimationTime",
+            "FullColorBlinkDelay",
+            "GameDuration",
+            "HintAnimationTime",
+            "HintCycles",
+            "PointsPerTile",
+            "StartToBlinkDelay",
+            "SwapAnimationTime",
+            "TimeToShowHint",
+            "TimeToShowWarning"
+        };
 
         string _androidId;
         string _iOSId;
         string _customId;
 
+        Dictionary<string, int> _currenciesData;
+
+        public Action<Dictionary<string, string>, Dictionary<string, int>> GotGameData;
+        public Action PendingUserName;
+
         #endregion
-
-        void Start()
-        {
-            _loginButton.enabled = false;
-
-            LoginWithDeviceId();
-        }
 
         #region API Calls
 
         /// <summary>
         /// Logins the with device identifier (iOS & Android only).
         /// </summary>
-        void LoginWithDeviceId()
+        public void LoginWithDeviceId()
         {
             if(FillDeviceId())
             {
@@ -71,7 +79,9 @@ namespace Server
                     CreateAccount = true,
                     InfoRequestParameters = new GetPlayerCombinedInfoRequestParams()
                     {
-                        GetPlayerProfile = true
+                        GetPlayerProfile = true,
+                        GetUserInventory = true,
+                        GetUserVirtualCurrency = true
                     }
                 };
 
@@ -79,14 +89,16 @@ namespace Server
             }
         }
 
-        void UpdatePlayerName()
+        public void UpdatePlayerName(string userName)
         {
-            if(IsUserNameValid())
-            {
-                var request = new UpdateUserTitleDisplayNameRequest { DisplayName = _userName };
-                PlayFabClientAPI.UpdateUserTitleDisplayName(request, OnSetDisplayNameSuccessful, OnSetDisplayNameFailed);
+            var request = new UpdateUserTitleDisplayNameRequest { DisplayName = userName };
+            PlayFabClientAPI.UpdateUserTitleDisplayName(request, OnSetDisplayNameSuccessful, OnSetDisplayNameFailed);
+        }
 
-            }
+        void GetTitleData()
+        {
+            var request = new GetTitleDataRequest { Keys = ContentTitleDataKeys };
+            PlayFabClientAPI.GetTitleData(request, OnGetTitleDataSuccessful, OnGetTitleDataFailed);
         }
 
         #endregion
@@ -104,13 +116,14 @@ namespace Server
             if(string.IsNullOrEmpty(result.InfoResultPayload.PlayerProfile.DisplayName))
             {
                 Debug.Log("Pending User Name");
-                _loginButton.enabled = true;
+                PendingUserName?.Invoke();
             }
             else
             {
                 Debug.Log("User Name is " + result.InfoResultPayload.PlayerProfile.DisplayName);
-                _loginPanel.gameObject.SetActive(false);
+                GetTitleData();
             }
+            _currenciesData = result.InfoResultPayload.UserVirtualCurrency;
         }
 
         /// <summary>
@@ -125,7 +138,6 @@ namespace Server
         void OnSetDisplayNameSuccessful(UpdateUserTitleDisplayNameResult result)
         {
             Debug.Log("Successfully changed Display Name");
-            _loginPanel.gameObject.SetActive(false);
         }
 
         void OnSetDisplayNameFailed(PlayFabError error)
@@ -133,20 +145,20 @@ namespace Server
             Debug.Log("Failed to change Display Name");
         }
 
+        void OnGetTitleDataSuccessful(GetTitleDataResult result)
+        {
+            Debug.Log("Managed to get the title data");
+            GotGameData?.Invoke(result.Data, _currenciesData);
+        }
+
+        void OnGetTitleDataFailed(PlayFabError error)
+        {
+            Debug.Log("Failed to get the title data");
+        }
+
         #endregion
 
         #region Utils
-
-        bool IsUserNameValid()
-        {
-            if (string.IsNullOrEmpty(_userName))
-                return false;
-
-            if (_userName.Length < 3 || _userName.Length > 20)
-                return false;
-
-            return true;
-        }
 
         /// <summary>
         /// Gets the device identifier and updates the static variables
@@ -184,27 +196,6 @@ namespace Server
         public bool CheckForSupportedMobilePlatform()
         {
             return Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer;
-        }
-
-        #endregion
-
-        #region UI
-
-        public void SetUserName(string userName)
-        {
-            _userName = userName;
-        }
-
-        public void OnLogin()
-        {
-            if(!IsUserNameValid())
-            {
-                Debug.LogWarning("Player Name is not set!");
-            }
-            else
-            {
-                UpdatePlayerName();
-            }
         }
 
         #endregion

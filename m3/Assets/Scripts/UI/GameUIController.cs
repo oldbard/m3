@@ -1,4 +1,5 @@
-﻿using GameData;
+﻿using Data;
+using GameData;
 using Gameplay.Animations;
 using System;
 using System.Threading.Tasks;
@@ -37,7 +38,7 @@ namespace UI
             var timeSpan = TimeSpan.FromSeconds(timeLeft);
             _timer.text = $"Time Left: {timeSpan:mm':'ss}";
 
-            if(!_blinkingTimer && timeLeft <= _config.TimeToShowWarning + 1)
+            if(!_blinkingTimer && timeLeft <= GamePersistenData.Instance.ConfigData.TimeToShowWarning + 1)
             {
                 _blinkingTimer = true;
                 ShowBlinkingTimer();
@@ -49,19 +50,19 @@ namespace UI
             var defColor = _timer.color;
             
             // Wait half a second to start showing the timer in red
-            await Task.Delay(_config.StartBlinkDelay);
+            await Task.Delay(GamePersistenData.Instance.ConfigData.StartBlinkDelay);
 
             float lerpInterval = 0.3f;
 
-            for(var i = 0; i < _config.TimeToShowWarning; i++)
+            for(var i = 0; i < GamePersistenData.Instance.ConfigData.TimeToShowWarning; i++)
             {
-                await Task.Delay(_config.FullColorBlinkDelay);
+                await Task.Delay(GamePersistenData.Instance.ConfigData.FullColorBlinkDelay);
 
                 await _animationsController.PlayTextColorAnim(_timer, defColor, Color.red, lerpInterval);
 
                 TimeOut?.Invoke();
 
-                await Task.Delay(_config.FullColorBlinkDelay);
+                await Task.Delay(GamePersistenData.Instance.ConfigData.FullColorBlinkDelay);
 
                 await _animationsController.PlayTextColorAnim(_timer, Color.red, defColor, lerpInterval);
             }

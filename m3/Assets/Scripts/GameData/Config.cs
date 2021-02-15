@@ -59,25 +59,7 @@ namespace GameData
         [Header("Input")]
         public float DragDetectionThreshold = 0.3f;
 
-        [Header("Timers")]
-        public float DropAnimationTime = 0.5f;
-        public float SwapAnimationTime = 0.5f;
-        public float DestroyAnimationTime = 0.5f;
-        public float HintAnimationTime = 0.5f;
-        public int TimeToShowHint = 10;
-        public int HintCycles = 3;
-        public int GameDuration = 60;
-        public int TimeToShowWarning = 5;
-
-        [Header("Blink Timers")]
-        public int StartBlinkDelay = 500;
-        public int FullColorBlinkDelay = 200;
-
-        [Header("Score")]
-        public int PointsPerTile = 10;
-
         [Header("Prefabs")]
-        public GameObject TileBackgroundPrefab;
         public TileView TilePrefab;
         public int TilesVariations;
 

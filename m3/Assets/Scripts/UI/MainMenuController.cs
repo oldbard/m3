@@ -14,7 +14,6 @@ namespace UI
         const string GridWidthKey = "GridWidth";
         const string GridHeightKey = "GridHeight";
         const string TilesVariationsKey = "TilesVariations";
-        const string MatchDurationKey = "MatchDuration";
         const string HighScoreKey = "HighScore";
 
         [SerializeField] Config _config;
@@ -22,7 +21,6 @@ namespace UI
         [SerializeField] Slider _widthSlider;
         [SerializeField] Slider _heightSlider;
         [SerializeField] Slider _variationsSlider;
-        [SerializeField] Slider _durationSlider;
         [SerializeField] Text _widthText;
         [SerializeField] Text _heightText;
         [SerializeField] Text _variationsText;
@@ -39,8 +37,6 @@ namespace UI
             OnChangeHeight(_heightSlider.value);
             _variationsSlider.value = PlayerPrefs.GetInt(TilesVariationsKey, _config.NumberOfTileTypes);
             OnChangeVariations(_variationsSlider.value);
-            _durationSlider.value = PlayerPrefs.GetInt(MatchDurationKey, _config.GameDuration);
-            OnChangeDuration(_durationSlider.value);
             
             _highScoreText.text = $"High Score: {PlayerPrefs.GetInt(HighScoreKey, 0)}";
         }
@@ -61,13 +57,6 @@ namespace UI
         {
             PlayerPrefs.SetInt(TilesVariationsKey, (int)variations);
             _variationsText.text = $"Tiles Variations: {(int)variations}";
-        }
-
-        public void OnChangeDuration(Single duration)
-        {
-            PlayerPrefs.SetInt(MatchDurationKey, (int)duration);
-            var timeSpan = TimeSpan.FromSeconds(duration);
-            _durationText.text = $"Match Duration: {timeSpan:mm':'ss}";
         }
 
         public void OnPlay()
