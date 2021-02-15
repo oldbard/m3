@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DevAccountEmail: oldbard@gmail.com
   DevAccountToken: 3x8tpnj1n6xmkkwdg6fr3z7g5nqcpzcab7gcb7k9n4htyp4t9nwkiwm7budn1fgi6m4juhcjsjgn7bkt8kcuhbi4qzjcs6anfpstfzjggtdyd18qwnkpna8feh5gamgs343n59skd96y8mugachgm3j8ykdq9yazffgz3gr3phgnz7tc99ykpx9yswiu3t6bs5dqhrbx
-  SelectedStudio: 
+  SelectedStudio: Vitor's Studio
   SdkPath: Assets/Plugins/PlayFabSDK
   EdExPath: 
   LocalCloudScriptPath: 
   PanelIsShown: 0
-  curMainMenuIdx: 0
+  curMainMenuIdx: 1
   curSubMenuIdx: 0
