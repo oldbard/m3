@@ -110,7 +110,7 @@ namespace Gameplay.Controllers
         {
             _inputManager.DisableInput();
 
-            var duration = GamePersistenData.Instance.ConfigData.GameDuration;
+            var duration = GamePersistentData.Instance.ConfigData.GameDuration;
 
             _animationsController = new AnimationsController(_config.LerpAnimationCurve);
 
@@ -215,7 +215,7 @@ namespace Gameplay.Controllers
                 // Checks if the game is running, if the player can interact and if a
                 // given amount of time has passed. If so, shows a hint to the player
                 if (_inputManager.CanDrag && _inputManager.TimeSinceLastInteraction >
-                    GamePersistenData.Instance.ConfigData.TimeToShowHint)
+                    GamePersistentData.Instance.ConfigData.TimeToShowHint)
                 {
                     OnShowHint();
                     _inputManager.ResetLastInteraction();
@@ -334,7 +334,7 @@ namespace Gameplay.Controllers
             while(tiles.Count > 0)
             {
                 // Calculates the player score
-                Score += tiles.Count * GamePersistenData.Instance.ConfigData.PointsPerTile;
+                Score += tiles.Count * GamePersistentData.Instance.ConfigData.PointsPerTile;
 
                 // Play a sound for the match and destruction
                 _soundsManager.PlayMatchClip();

@@ -4,19 +4,27 @@ using System.Globalization;
 
 namespace Data
 {
-    public class GamePersistenData
+    public class GamePersistentData
     {
         public ConfigData ConfigData;
         public UserData UserData;
 
-        public static GamePersistenData Instance;
+        public static GamePersistentData Instance;
 
-        public GamePersistenData(Dictionary<string, string> configData, Dictionary<string, int> currenciesData)
+        public GamePersistentData()
         {
             Instance = this;
 
-            ConfigData = new ConfigData(configData);
-            UserData = new UserData(currenciesData);
+            ConfigData = new ConfigData();
+            UserData = new UserData();
+        }
+
+        public void ParseData(Dictionary<string, string> configData, Dictionary<string, int> currenciesData)
+        {
+            Instance = this;
+
+            ConfigData.ParseData(configData);
+            UserData.ParseData(currenciesData);
         }
     }
 
@@ -36,14 +44,14 @@ namespace Data
         const string TimeToShowWarningKey = "TimeToShowWarning";
 
         // Timers
-        readonly public float DestroyAnimationTime = 0.5f;
-        readonly public float DropAnimationTime = 0.5f;
-        readonly public float SwapAnimationTime = 0.5f;
-        readonly public float HintAnimationTime = 0.5f;
-        readonly public int TimeToShowHint = 10;
-        readonly public int HintCycles = 3;
-        readonly public int GameDuration = 60;
-        readonly public int TimeToShowWarning = 5;
+        public float DestroyAnimationTime = 0.5f;
+        public float DropAnimationTime = 0.5f;
+        public float SwapAnimationTime = 0.5f;
+        public float HintAnimationTime = 0.5f;
+        public int TimeToShowHint = 10;
+        public int HintCycles = 3;
+        public int GameDuration = 60;
+        public int TimeToShowWarning = 5;
 
         // Blink Timers
         public int StartBlinkDelay = 500;
@@ -52,7 +60,7 @@ namespace Data
         // Score
         public int PointsPerTile = 10;
 
-        public ConfigData(Dictionary<string, string> configData)
+        public void ParseData(Dictionary<string, string> configData)
         {
 
             try
@@ -108,17 +116,32 @@ namespace Data
             get => _gems;
         }
 
-        public UserData(Dictionary<string, int> currenciesData)
+        public Action<int> GoldChanged;
+        public Action<int> GemsChanged;
+
+        public void ParseData(Dictionary<string, int> currenciesData)
         {
             try
             {
-                _gold = currenciesData[GoldKey];
-                _gems = currenciesData[GemsKey];
+                AddGold(currenciesData[GoldKey]);
+                AddGems(currenciesData[GemsKey]);
             }
             catch (Exception e)
             {
                 throw e;
             }
+        }
+
+        public void AddGold(int amount)
+        {
+            _gold += amount;
+            GoldChanged?.Invoke(_gold);
+        }
+
+        public void AddGems(int amount)
+        {
+            _gems += amount;
+            GemsChanged?.Invoke(_gems);
         }
     }
 }

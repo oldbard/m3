@@ -371,7 +371,7 @@ namespace Gameplay.Views
         {
             var viewTiles = GetViewTiles(tilesToUpdate, true);
             await _animationsController.PlayTilesPositionAnim(viewTiles,
-                GamePersistenData.Instance.ConfigData.DropAnimationTime);
+                GamePersistentData.Instance.ConfigData.DropAnimationTime);
 
             // Tags the view tile as spawned
             for (var i = 0; i < viewTiles.Count; i++)
@@ -406,7 +406,7 @@ namespace Gameplay.Views
             _tilesBeingAnimated.Add(tileView2);
 
             await _animationsController.PlayTilesPositionAnim(_tilesBeingAnimated,
-                GamePersistenData.Instance.ConfigData.SwapAnimationTime);
+                GamePersistentData.Instance.ConfigData.SwapAnimationTime);
         }
 
         /// <summary>
@@ -417,7 +417,7 @@ namespace Gameplay.Views
         {
             var tiles = GetViewTiles(tilesMatched);
             await _animationsController.PlayTilesScaleAnim(tiles,
-                GamePersistenData.Instance.ConfigData.SwapAnimationTime);
+                GamePersistentData.Instance.ConfigData.SwapAnimationTime);
 
             // Despawn the specific tile
             for (var i = 0; i < tiles.Count; i++)
@@ -436,7 +436,7 @@ namespace Gameplay.Views
             var tiles = GetViewTiles(tilesMatched);
 
             // We animate it as many times as it is configured
-            for (int j = 0; j < GamePersistenData.Instance.ConfigData.HintCycles; j++)
+            for (int j = 0; j < GamePersistentData.Instance.ConfigData.HintCycles; j++)
             {
                 // Enables the highlight sprite and sets it's alpha to 0
                 for (var i = 0; i < tiles.Count; i++)
@@ -448,11 +448,11 @@ namespace Gameplay.Views
 
                 // Shows background
                 await _animationsController.PlayTilesBackgroundAlphaAnim(tiles,
-                    GamePersistenData.Instance.ConfigData.HintAnimationTime * 0.5f, true);
+                    GamePersistentData.Instance.ConfigData.HintAnimationTime * 0.5f, true);
 
                 // Hides background
                 await _animationsController.PlayTilesBackgroundAlphaAnim(tiles,
-                    GamePersistenData.Instance.ConfigData.HintAnimationTime * 0.5f, false);
+                    GamePersistentData.Instance.ConfigData.HintAnimationTime * 0.5f, false);
             }
 
             // Disables the high lighting

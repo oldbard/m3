@@ -11,11 +11,15 @@ public class LoginController : MonoBehaviour
 
     PlayFabLogin _playFabLogin;
 
+    GamePersistentData _gameData;
+
     string _userName;
 
-    void Start()
+    void Awake()
     {
         _loginButton.enabled = false;
+
+        _gameData = new GamePersistentData();
 
         _playFabLogin = new PlayFabLogin();
 
@@ -40,7 +44,7 @@ public class LoginController : MonoBehaviour
     {
         UnregisterEvents();
 
-        new GamePersistenData(configData, currenciesData);
+        _gameData.ParseData(configData, currenciesData);
 
         _loginPanel.gameObject.SetActive(false);
     }

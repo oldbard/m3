@@ -1,4 +1,5 @@
 ﻿using System;
+using Data;
 using GameData;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -24,12 +25,13 @@ namespace UI
         [SerializeField] Text _widthText;
         [SerializeField] Text _heightText;
         [SerializeField] Text _variationsText;
-        [SerializeField] Text _durationText;
         [SerializeField] Text _highScoreText;
+        [SerializeField] Text _goldText;
+        [SerializeField] Text _gemsText;
 
         [SerializeField] AudioSource _backgroundMusic;
         
-        void Awake()
+        void Start()
         {
             _widthSlider.value = PlayerPrefs.GetInt(GridWidthKey, _config.DefaultGridWidth);
             OnChangeWidth(_widthSlider.value);
@@ -39,6 +41,12 @@ namespace UI
             OnChangeVariations(_variationsSlider.value);
             
             _highScoreText.text = $"High Score: {PlayerPrefs.GetInt(HighScoreKey, 0)}";
+
+            GamePersistentData.Instance.UserData.GoldChanged += OnChangeGold;
+            GamePersistentData.Instance.UserData.GemsChanged += OnChangeGems;
+
+            _goldText.text = $"Gold: {0}";
+            _gemsText.text = $"Gems: {0}";
         }
 
         public void OnChangeWidth(Single width)
@@ -57,6 +65,16 @@ namespace UI
         {
             PlayerPrefs.SetInt(TilesVariationsKey, (int)variations);
             _variationsText.text = $"Tiles Variations: {(int)variations}";
+        }
+
+        void OnChangeGold(int amount)
+        {
+            _goldText.text = $"Gold: {amount}";
+        }
+
+        void OnChangeGems(int amount)
+        {
+            _gemsText.text = $"Gems: {amount}";
         }
 
         public void OnPlay()
