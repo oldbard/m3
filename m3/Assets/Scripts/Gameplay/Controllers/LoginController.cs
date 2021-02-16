@@ -1,6 +1,6 @@
 ﻿using Client;
-using Data;
-using System.Collections.Generic;
+using GameData;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,8 +8,9 @@ public class LoginController : MonoBehaviour
 {
     [SerializeField] Image _loginPanel;
     [SerializeField] Button _loginButton;
+    [SerializeField] GameObject _loginControls;
 
-    PlayFabLogin _playFabLogin;
+    PlayFabClient _playFabClient;
 
     GamePersistentData _gameData;
 
@@ -17,42 +18,28 @@ public class LoginController : MonoBehaviour
 
     void Awake()
     {
-        _loginButton.enabled = false;
-
         _gameData = new GamePersistentData();
 
-        _playFabLogin = new PlayFabLogin();
+        _playFabClient = new PlayFabClient();
 
-        RegisterEvents();
-
-        _playFabLogin.LoginWithDeviceId();
+        _ = DoLogin();
     }
 
-    void RegisterEvents()
+    async Task DoLogin()
     {
-        _playFabLogin.GotGameData += OnGotGameData;
-        _playFabLogin.PendingUserName += OnPendingUserName;
+        var (currenciesData, pendingName) = await _playFabClient.Login();
+
+        var configData = await _playFabClient.GetGameData();
+
+        var catalog = await _playFabClient.GetCatalogItems();
+
+        _gameData.ParseData(configData, currenciesData, catalog);
+
+        _loginPanel.gameObject.SetActive(pendingName);
+        _loginControls.SetActive(pendingName);
+        _loginButton.enabled = pendingName;
     }
 
-    void UnregisterEvents()
-    {
-        _playFabLogin.GotGameData -= OnGotGameData;
-        _playFabLogin.PendingUserName -= OnPendingUserName;
-    }
-
-    void OnGotGameData(Dictionary<string, string> configData, Dictionary<string, int> currenciesData)
-    {
-        UnregisterEvents();
-
-        _gameData.ParseData(configData, currenciesData);
-
-        _loginPanel.gameObject.SetActive(false);
-    }
-
-    private void OnPendingUserName()
-    {
-        _loginButton.enabled = true;
-    }
     public void SetUserName(string userName)
     {
         _userName = userName;
@@ -66,8 +53,18 @@ public class LoginController : MonoBehaviour
         }
         else
         {
-            _playFabLogin.UpdatePlayerName(_userName);
+            _ = SetUserName();
         }
+    }
+
+    async Task SetUserName()
+    {
+        _loginButton.enabled = false;
+
+        // TODO: Compare if it is the same with the result?
+        await _playFabClient.SetUserName(_userName);
+
+        _loginPanel.gameObject.SetActive(false);
     }
 
     bool IsUserNameValid()

@@ -1,15 +1,18 @@
-﻿using PlayFab;
+﻿using GameData;
+using PlayFab;
 using PlayFab.ClientModels;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Client
 {
-    public class PlayFabLogin
+    public class PlayFabClient
     {
         #region Declarations
-        public static readonly List<string> ContentTitleDataKeys = new List<string>
+
+        public readonly List<string> ContentTitleDataKeys = new List<string>
         { 
             "DestroyAnimationTime",
             "DropAnimationTime",
@@ -21,7 +24,8 @@ namespace Client
             "StartToBlinkDelay",
             "SwapAnimationTime",
             "TimeToShowHint",
-            "TimeToShowWarning"
+            "TimeToShowWarning",
+            "Upgradables"
         };
 
         string _androidId;
@@ -29,20 +33,42 @@ namespace Client
         string _customId;
 
         Dictionary<string, int> _currenciesData;
+        Dictionary<string, string> _gameData;
+        List<CatalogConfigData> _catalog = new List<CatalogConfigData>();
 
-        public Action<Dictionary<string, string>, Dictionary<string, int>> GotGameData;
-        public Action PendingUserName;
+        string _userName;
+
+        bool _loggingIn;
+        bool _gettingGameData;
+        bool _gettingCatalog;
+        bool _updatingPlayerName;
+
+        bool _pendingUserName;
 
         #endregion
 
         #region API Calls
 
+        public async Task<(Dictionary<string, int>, bool)> Login()
+        {
+            LoginWithDeviceId();
+
+            while(_loggingIn)
+            {
+                await Task.Yield();
+            }
+
+            return (_currenciesData, _pendingUserName);
+        }
+
         /// <summary>
         /// Logins the with device identifier (iOS & Android only).
         /// </summary>
-        public void LoginWithDeviceId()
+        void LoginWithDeviceId()
         {
-            if(FillDeviceId())
+            _loggingIn = true;
+
+            if (FillDeviceId())
             {
                 if (!string.IsNullOrEmpty(_androidId))
                 {
@@ -89,16 +115,65 @@ namespace Client
             }
         }
 
-        public void UpdatePlayerName(string userName)
+        public async Task<Dictionary<string, string>> GetGameData()
         {
+            RequestGameData();
+
+            while(_gettingGameData)
+            {
+                await Task.Yield();
+            }
+
+            return _gameData;
+        }
+
+        void RequestGameData()
+        {
+            _gettingGameData = true;
+
+            var request = new GetTitleDataRequest { Keys = ContentTitleDataKeys };
+            PlayFabClientAPI.GetTitleData(request, OnGetTitleDataSuccessful, OnGetTitleDataFailed);
+        }
+
+        public async Task<string> SetUserName(string userName)
+        {
+            UpdatePlayerName(userName);
+
+            while(_updatingPlayerName)
+            {
+                await Task.Yield();
+            }
+
+            return _userName;
+        }
+
+        void UpdatePlayerName(string userName)
+        {
+            _updatingPlayerName = true;
+
             var request = new UpdateUserTitleDisplayNameRequest { DisplayName = userName };
             PlayFabClientAPI.UpdateUserTitleDisplayName(request, OnSetDisplayNameSuccessful, OnSetDisplayNameFailed);
         }
 
-        void GetTitleData()
+        public async Task<List<CatalogConfigData>> GetCatalogItems()
         {
-            var request = new GetTitleDataRequest { Keys = ContentTitleDataKeys };
-            PlayFabClientAPI.GetTitleData(request, OnGetTitleDataSuccessful, OnGetTitleDataFailed);
+            RequestCatalogItems();
+
+            while (_gettingCatalog)
+            {
+                await Task.Yield();
+            }
+
+            return _catalog;
+        }
+
+        void RequestCatalogItems()
+        {
+            _gettingCatalog = true;
+
+            var req = new GetCatalogItemsRequest { CatalogVersion = "1" };
+
+            PlayFabClientAPI.GetCatalogItems(req, OnCatalogRequestSuccessful, OnCatalogRequestFailed);
         }
 
         #endregion
@@ -113,17 +188,18 @@ namespace Client
         {
             Debug.Log("Login Successful");
 
-            if(string.IsNullOrEmpty(result.InfoResultPayload.PlayerProfile.DisplayName))
+            if(result.InfoResultPayload.PlayerProfile == null || string.IsNullOrEmpty(result.InfoResultPayload.PlayerProfile.DisplayName))
             {
                 Debug.Log("Pending User Name");
-                PendingUserName?.Invoke();
+                _pendingUserName = true;
             }
             else
             {
                 Debug.Log("User Name is " + result.InfoResultPayload.PlayerProfile.DisplayName);
-                GetTitleData();
             }
             _currenciesData = result.InfoResultPayload.UserVirtualCurrency;
+
+            _loggingIn = false;
         }
 
         /// <summary>
@@ -132,28 +208,55 @@ namespace Client
         /// <param name="result">Result object returned from PlayFab server</param>
         void OnLoginFailed(PlayFabError error)
         {
-            Debug.Log("Login Failed!");
+            throw new Exception($"Login Failed! {error.ErrorMessage}");
         }
 
         void OnSetDisplayNameSuccessful(UpdateUserTitleDisplayNameResult result)
         {
+            _userName = result.DisplayName;
+            
             Debug.Log("Successfully changed Display Name");
+
+            _updatingPlayerName = false;
         }
 
         void OnSetDisplayNameFailed(PlayFabError error)
         {
-            Debug.Log("Failed to change Display Name");
+            throw new Exception($"Failed to change Display Name. {error.ErrorMessage}");
         }
 
         void OnGetTitleDataSuccessful(GetTitleDataResult result)
         {
             Debug.Log("Managed to get the title data");
-            GotGameData?.Invoke(result.Data, _currenciesData);
+            _gameData = result.Data;
+
+            _gettingGameData = false;
         }
 
         void OnGetTitleDataFailed(PlayFabError error)
         {
-            Debug.Log("Failed to get the title data");
+            throw new Exception($"Failed to get the title data. {error.ErrorMessage}");
+        }
+
+        void OnCatalogRequestSuccessful(GetCatalogItemsResult result)
+        {
+            const string SoftCurrency = "SC";
+
+            foreach (var catalogItem in result.Catalog)
+            {
+                var item = new CatalogConfigData();
+                item.Parse(catalogItem.ItemId, catalogItem.VirtualCurrencyPrices[SoftCurrency],
+                    catalogItem.CustomData);
+
+                _catalog.Add(item);
+            }
+
+            _gettingCatalog = false;
+        }
+
+        void OnCatalogRequestFailed(PlayFabError error)
+        {
+            throw new Exception($"Failed to get shop catalog. {error.ErrorMessage}");
         }
 
         #endregion

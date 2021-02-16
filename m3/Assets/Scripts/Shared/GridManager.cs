@@ -34,8 +34,7 @@ namespace Shared
             Green,
             Orange,
             Red,
-            Yellow,
-            Count
+            Yellow
         }
 
         /// <summary>

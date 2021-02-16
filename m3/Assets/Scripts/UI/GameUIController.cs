@@ -1,5 +1,4 @@
-﻿using Data;
-using GameData;
+﻿using GameData;
 using Gameplay.Animations;
 using System;
 using System.Threading.Tasks;

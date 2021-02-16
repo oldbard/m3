@@ -1,5 +1,4 @@
 ﻿using System;
-using Data;
 using GameData;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -28,6 +27,7 @@ namespace UI
         [SerializeField] Text _highScoreText;
         [SerializeField] Text _goldText;
         [SerializeField] Text _gemsText;
+        [SerializeField] GameObject _upgradesPanel;
 
         [SerializeField] AudioSource _backgroundMusic;
         
@@ -45,8 +45,8 @@ namespace UI
             GamePersistentData.Instance.UserData.GoldChanged += OnChangeGold;
             GamePersistentData.Instance.UserData.GemsChanged += OnChangeGems;
 
-            _goldText.text = $"Gold: {0}";
-            _gemsText.text = $"Gems: {0}";
+            _goldText.text = "0";
+            _gemsText.text = "0";
         }
 
         public void OnChangeWidth(Single width)
@@ -69,18 +69,23 @@ namespace UI
 
         void OnChangeGold(int amount)
         {
-            _goldText.text = $"Gold: {amount}";
+            _goldText.text = amount.ToString();
         }
 
         void OnChangeGems(int amount)
         {
-            _gemsText.text = $"Gems: {amount}";
+            _gemsText.text = amount.ToString();
         }
 
         public void OnPlay()
         {
             _backgroundMusic.Stop();
             SceneManager.LoadScene("Gameplay");
+        }
+
+        public void OnShowUpgrades()
+        {
+            _upgradesPanel.SetActive(true);
         }
     }
 }

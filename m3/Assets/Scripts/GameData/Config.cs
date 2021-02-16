@@ -2,6 +2,7 @@
 using UI;
 using UnityEngine;
 using Shared;
+using UnityEngine.UI;
 
 namespace GameData
 {
@@ -26,6 +27,7 @@ namespace GameData
         public Sprite Mouth;
         public Sprite Shadow;
         public Sprite Selected;
+        public Texture2D UIImage;
         public RuntimeAnimatorController Animation;
     }
 
@@ -35,19 +37,6 @@ namespace GameData
     [CreateAssetMenu(fileName = "Config", menuName = "M3/Config", order = 1)]
     public class Config : ScriptableObject
     {
-        /// <summary>
-        /// Enumeration of the available Tile Types
-        /// </summary>
-        /*public enum TileType
-        {
-            Blue,
-            Green,
-            Orange,
-            Red,
-            Yellow,
-            Count
-        }*/
-
         [Header("Grid")]
         public int DefaultGridWidth;
         public int DefaultGridHeight;
@@ -62,6 +51,11 @@ namespace GameData
         [Header("Prefabs")]
         public TileView TilePrefab;
         public int TilesVariations;
+        
+        [Header("Textures")]
+        public Texture2D UITimerTexture;
+        public Texture2D UIGoldTexture;
+        public Texture2D UIGemsTexture;
 
         [Header("BGM")]
         [SerializeField] AudioClip[] _bgms;
