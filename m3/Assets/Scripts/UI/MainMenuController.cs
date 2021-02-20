@@ -27,7 +27,7 @@ namespace UI
         [SerializeField] Text _highScoreText;
         [SerializeField] Text _goldText;
         [SerializeField] Text _gemsText;
-        [SerializeField] GameObject _upgradesPanel;
+        [SerializeField] UpgradeButtonController _timerUpdateController;
 
         [SerializeField] AudioSource _backgroundMusic;
         
@@ -39,14 +39,32 @@ namespace UI
             OnChangeHeight(_heightSlider.value);
             _variationsSlider.value = PlayerPrefs.GetInt(TilesVariationsKey, _config.NumberOfTileTypes);
             OnChangeVariations(_variationsSlider.value);
-            
+
             _highScoreText.text = $"High Score: {PlayerPrefs.GetInt(HighScoreKey, 0)}";
 
-            GamePersistentData.Instance.UserData.GoldChanged += OnChangeGold;
-            GamePersistentData.Instance.UserData.GemsChanged += OnChangeGems;
+            RegisterEvents();
 
             _goldText.text = "0";
             _gemsText.text = "0";
+        }
+
+        void OnDestroy()
+        {
+            UnregisterEvents();
+        }
+
+        void RegisterEvents()
+        {
+            GamePersistentData.Instance.UserData.GoldChanged += OnChangeGold;
+            GamePersistentData.Instance.UserData.GemsChanged += OnChangeGems;
+            GamePersistentData.Instance.UserData.DataLoaded += OnDataLoaded;
+        }
+
+        void UnregisterEvents()
+        {
+            GamePersistentData.Instance.UserData.GoldChanged -= OnChangeGold;
+            GamePersistentData.Instance.UserData.GemsChanged -= OnChangeGems;
+            GamePersistentData.Instance.UserData.DataLoaded -= OnDataLoaded;
         }
 
         public void OnChangeWidth(Single width)
@@ -77,15 +95,43 @@ namespace UI
             _gemsText.text = amount.ToString();
         }
 
+        void OnDataLoaded()
+        {
+            var catalog = GamePersistentData.Instance.ConfigData.Catalog;
+
+            _timerUpdateController.Init(_config, catalog, OnUpgradeItemButtonClicked);
+        }
+
+        void OnUpgradeItemButtonClicked()
+        {
+            if(GamePersistentData.Instance.UserData.IsUpgradingTimer)
+            {
+                OnSkipUpgradeItemCalled();
+            }
+            else
+            {
+                OnUpgradeItemCalled();
+            }
+        }
+
+        void OnUpgradeItemCalled()
+        {
+            GamePersistentData.Instance.UserData.SetTimer(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            _timerUpdateController.ShowUpgrade();
+        }
+
+        void OnSkipUpgradeItemCalled()
+        {
+            GamePersistentData.Instance.UserData.SetTimer(0);
+            GamePersistentData.Instance.UserData.SetTimerLevel(GamePersistentData.Instance.UserData.DurationLevel + 1);
+
+            _timerUpdateController.CompleteUpgrade();
+        }
+
         public void OnPlay()
         {
             _backgroundMusic.Stop();
             SceneManager.LoadScene("Gameplay");
-        }
-
-        public void OnShowUpgrades()
-        {
-            _upgradesPanel.SetActive(true);
         }
     }
 }

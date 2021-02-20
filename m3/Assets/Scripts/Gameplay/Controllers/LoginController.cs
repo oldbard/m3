@@ -1,5 +1,6 @@
 ﻿using Client;
 using GameData;
+using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,22 +23,31 @@ public class LoginController : MonoBehaviour
 
         _playFabClient = new PlayFabClient();
 
+        _loginPanel.gameObject.SetActive(true);
+
         _ = DoLogin();
     }
 
     async Task DoLogin()
     {
-        var (currenciesData, pendingName) = await _playFabClient.Login();
+        try
+        {
+            var (currenciesData, pendingName) = await _playFabClient.Login();
 
-        var configData = await _playFabClient.GetGameData();
+            var configData = await _playFabClient.GetGameData();
 
-        var catalog = await _playFabClient.GetCatalogItems();
+            var catalog = await _playFabClient.GetCatalogItems();
 
-        _gameData.ParseData(configData, currenciesData, catalog);
+            _gameData.ParseData(configData, currenciesData, catalog);
 
-        _loginPanel.gameObject.SetActive(pendingName);
-        _loginControls.SetActive(pendingName);
-        _loginButton.enabled = pendingName;
+            _loginPanel.gameObject.SetActive(pendingName);
+            _loginControls.SetActive(pendingName);
+            _loginButton.enabled = pendingName;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.Message);
+        }
     }
 
     public void SetUserName(string userName)

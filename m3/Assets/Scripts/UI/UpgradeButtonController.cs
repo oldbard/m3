@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameData;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,38 +8,67 @@ public class UpgradeButtonController : MonoBehaviour
 {
     [SerializeField] Button _button;
     [SerializeField] Text _cost;
+    [SerializeField] Text _currentValue;
     [SerializeField] Text _timeAndLevel;
+    [SerializeField] Image _currency;
     [SerializeField] GameObject _confirmPanel;
 
-    bool _upgrading;
     long _initialTime;
     int _duration;
 
+    Config _config;
+    CatalogConfigData _catalogItemConfig;
+
     WaitForSeconds _waitForSecond = new WaitForSeconds(1f);
+    Coroutine _timerCoroutine;
 
-    public void Init(int cost, int level)
+    Action _onButtonClickedCallback;
+
+    public void Init(Config config, CatalogConfigData catalogConfig, Action onButtonClickedCallback)
     {
-        _cost.text = $"{cost}$";
-        _timeAndLevel.text = $"Level {level}";
+        _config = config;
+        _catalogItemConfig = catalogConfig;
+        _onButtonClickedCallback = onButtonClickedCallback;
+
+        ShowData();
     }
 
-    public void SetupUpgrade(long initialTimestamp, int duration)
+    public void CompleteUpgrade()
     {
-        _initialTime = initialTimestamp;
-        _duration = duration;
+        StopCoroutine(_timerCoroutine);
+        ShowData();
     }
 
-    void Start()
+    void ShowData()
     {
-        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - 50;
+        var userData = GamePersistentData.Instance.UserData;
 
-        SetupUpgrade(now, 100);
-        StartCoroutine(UpdateTimer());
+        _cost.text = $"{_catalogItemConfig.UpgradeCost}$";
+        _timeAndLevel.text = $"Level: {userData.DurationLevel}";
+        _currentValue.text = $"Duration: {_catalogItemConfig.CurrentValue}";
+        _currency.sprite = _config.GoldSprite;
+
+        if (userData.IsUpgradingTimer)
+        {
+            ShowUpgrade();
+        }
+    }
+
+    public void ShowUpgrade()
+    {
+        var userData = GamePersistentData.Instance.UserData;
+
+        _cost.text = $"{_catalogItemConfig.SkipUpgradeCost} Skip";
+        _initialTime = userData.UpgradeStartedTimeStamp;
+        _duration = _catalogItemConfig.UpgradeDuration;
+        _currency.sprite = _config.GemsSprite;
+
+        _timerCoroutine = StartCoroutine(UpdateTimer());
     }
 
     IEnumerator UpdateTimer()
     {
-        while (true)
+        while(true)
         {
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
@@ -46,14 +76,21 @@ public class UpgradeButtonController : MonoBehaviour
 
             if (timeDiff > _duration)
             {
-                Debug.Log("Timer is Over! Yay");
-                yield break;
+                break;
             }
 
-            _cost.text = $"{1}";
-            _timeAndLevel.text = $" {_duration - timeDiff}";
+            var timeSpan = TimeSpan.FromSeconds(_duration - timeDiff);
+            _timeAndLevel.text = $"Time Left: {timeSpan:mm':'ss}";
 
             yield return _waitForSecond;
         }
+
+        Debug.Log("Timer is Over! Yay");
+        CompleteUpgrade();
+    }
+
+    public void OnClick()
+    {
+        _onButtonClickedCallback?.Invoke();
     }
 }

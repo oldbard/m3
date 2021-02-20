@@ -34,7 +34,7 @@ namespace Client
 
         Dictionary<string, int> _currenciesData;
         Dictionary<string, string> _gameData;
-        List<CatalogConfigData> _catalog = new List<CatalogConfigData>();
+        CatalogConfigData _catalog;
 
         string _userName;
 
@@ -155,7 +155,7 @@ namespace Client
             PlayFabClientAPI.UpdateUserTitleDisplayName(request, OnSetDisplayNameSuccessful, OnSetDisplayNameFailed);
         }
 
-        public async Task<List<CatalogConfigData>> GetCatalogItems()
+        public async Task<CatalogConfigData> GetCatalogItems()
         {
             RequestCatalogItems();
 
@@ -241,15 +241,13 @@ namespace Client
         void OnCatalogRequestSuccessful(GetCatalogItemsResult result)
         {
             const string SoftCurrency = "SC";
+            const string HardCurrency = "HC";
 
-            foreach (var catalogItem in result.Catalog)
-            {
-                var item = new CatalogConfigData();
-                item.Parse(catalogItem.ItemId, catalogItem.VirtualCurrencyPrices[SoftCurrency],
-                    catalogItem.CustomData);
+            var catalogItem = result.Catalog[0];
 
-                _catalog.Add(item);
-            }
+            _catalog = new CatalogConfigData();
+            _catalog.Parse(catalogItem.ItemId, catalogItem.VirtualCurrencyPrices[SoftCurrency],
+                catalogItem.VirtualCurrencyPrices[HardCurrency], catalogItem.CustomData);
 
             _gettingCatalog = false;
         }

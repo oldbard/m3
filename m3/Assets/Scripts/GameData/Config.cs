@@ -54,8 +54,8 @@ namespace GameData
         
         [Header("Textures")]
         public Texture2D UITimerTexture;
-        public Texture2D UIGoldTexture;
-        public Texture2D UIGemsTexture;
+        public Sprite GoldSprite;
+        public Sprite GemsSprite;
 
         [Header("BGM")]
         [SerializeField] AudioClip[] _bgms;

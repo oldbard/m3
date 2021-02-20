@@ -33,5 +33,5 @@ Maybe separate the match detection from the grid
 
 Create a ResourceViewController to show the game resources.
 
-Make player win coins based on the score of the match played
+Make player win coins based on the score of the match played.
 

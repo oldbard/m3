@@ -367,7 +367,7 @@ namespace Gameplay.Controllers
         {
             // Gets a list of the first possible match and shows it to the player
             var list = _gridManager.GetFirstPossibleMatch();
-            _gridView.PlayHintAnim(list);
+            _ = _gridView.PlayHintAnim(list);
         }
 
         #endregion
