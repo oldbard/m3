@@ -2,6 +2,7 @@
 using UI;
 using UnityEngine;
 using Shared;
+using UnityEngine.UI;
 
 namespace GameData
 {
@@ -26,6 +27,7 @@ namespace GameData
         public Sprite Mouth;
         public Sprite Shadow;
         public Sprite Selected;
+        public Texture2D UIImage;
         public RuntimeAnimatorController Animation;
     }
 
@@ -35,19 +37,6 @@ namespace GameData
     [CreateAssetMenu(fileName = "Config", menuName = "M3/Config", order = 1)]
     public class Config : ScriptableObject
     {
-        /// <summary>
-        /// Enumeration of the available Tile Types
-        /// </summary>
-        /*public enum TileType
-        {
-            Blue,
-            Green,
-            Orange,
-            Red,
-            Yellow,
-            Count
-        }*/
-
         [Header("Grid")]
         public int DefaultGridWidth;
         public int DefaultGridHeight;
@@ -59,27 +48,15 @@ namespace GameData
         [Header("Input")]
         public float DragDetectionThreshold = 0.3f;
 
-        [Header("Timers")]
-        public float DropAnimationTime = 0.5f;
-        public float SwapAnimationTime = 0.5f;
-        public float DestroyAnimationTime = 0.5f;
-        public float HintAnimationTime = 0.5f;
-        public int TimeToShowHint = 10;
-        public int HintCycles = 3;
-        public int GameDuration = 60;
-        public int TimeToShowWarning = 5;
-
-        [Header("Blink Timers")]
-        public int StartBlinkDelay = 500;
-        public int FullColorBlinkDelay = 200;
-
-        [Header("Score")]
-        public int PointsPerTile = 10;
-
         [Header("Prefabs")]
-        public GameObject TileBackgroundPrefab;
         public TileView TilePrefab;
         public int TilesVariations;
+        public GameObject LeaderboardItem;
+        
+        [Header("Textures")]
+        public Texture2D UITimerTexture;
+        public Sprite GoldSprite;
+        public Sprite GemsSprite;
 
         [Header("BGM")]
         [SerializeField] AudioClip[] _bgms;

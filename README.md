@@ -27,3 +27,11 @@ Bitmask detection
 VFX
 
 Maybe separate the match detection from the grid
+
+
+# PlayFab Branch TODO
+
+Create a ResourceViewController to show the game resources.
+
+Make player win coins based on the score of the match played.
+

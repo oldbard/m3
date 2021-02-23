@@ -1,5 +1,6 @@
 ﻿using GameData;
 using Gameplay.Animations;
+using GameServices;
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -25,6 +26,20 @@ namespace UI
         public Action TimeOut;
 
         bool _blinkingTimer;
+        GamePersistentData _gamePersistentData;
+
+        ConfigData ConfigData
+        {
+            get
+            {
+                if (_gamePersistentData == null)
+                {
+                    _gamePersistentData = Services.Resolve<GamePersistentData>();
+                }
+
+                return _gamePersistentData.ConfigData;
+            }
+        }
 
         public void Init(Config config, AnimationsController animationsController)
         {
@@ -37,7 +52,7 @@ namespace UI
             var timeSpan = TimeSpan.FromSeconds(timeLeft);
             _timer.text = $"Time Left: {timeSpan:mm':'ss}";
 
-            if(!_blinkingTimer && timeLeft <= _config.TimeToShowWarning + 1)
+            if(!_blinkingTimer && timeLeft <= ConfigData.TimeToShowWarning + 1)
             {
                 _blinkingTimer = true;
                 ShowBlinkingTimer();
@@ -49,19 +64,19 @@ namespace UI
             var defColor = _timer.color;
             
             // Wait half a second to start showing the timer in red
-            await Task.Delay(_config.StartBlinkDelay);
+            await Task.Delay(ConfigData.StartBlinkDelay);
 
             float lerpInterval = 0.3f;
 
-            for(var i = 0; i < _config.TimeToShowWarning; i++)
+            for(var i = 0; i < ConfigData.TimeToShowWarning; i++)
             {
-                await Task.Delay(_config.FullColorBlinkDelay);
+                await Task.Delay(ConfigData.FullColorBlinkDelay);
 
                 await _animationsController.PlayTextColorAnim(_timer, defColor, Color.red, lerpInterval);
 
                 TimeOut?.Invoke();
 
-                await Task.Delay(_config.FullColorBlinkDelay);
+                await Task.Delay(ConfigData.FullColorBlinkDelay);
 
                 await _animationsController.PlayTextColorAnim(_timer, Color.red, defColor, lerpInterval);
             }

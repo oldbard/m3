@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GameData;
 using Gameplay.Animations;
 using Gameplay.Views;
+using GameServices;
 using Shared;
 using Sounds;
 using UI;
@@ -22,7 +23,6 @@ namespace Gameplay.Controllers
         const string GridWidthKey = "GridWidth";
         const string GridHeightKey = "GridHeight";
         const string TilesVariationsKey = "TilesVariations";
-        const string MatchDurationKey = "MatchDuration";
 
         [SerializeField] Config _config;
         [SerializeField] GridViewController _gridView;
@@ -76,8 +76,23 @@ namespace Gameplay.Controllers
             }
         }
 
+        GamePersistentData _gamePersistentData;
+
+        ConfigData ConfigData
+        {
+            get
+            {
+                if (_gamePersistentData == null)
+                {
+                    _gamePersistentData = Services.Resolve<GamePersistentData>();
+                }
+
+                return _gamePersistentData.ConfigData;
+            }
+        }
+
         #endregion
-        
+
         #region Initialization
 
         /// <summary>
@@ -110,7 +125,7 @@ namespace Gameplay.Controllers
         {
             _inputManager.DisableInput();
 
-            var duration = PlayerPrefs.GetInt(MatchDurationKey, _config.GameDuration);
+            var duration = ConfigData.GameDuration;
 
             _animationsController = new AnimationsController(_config.LerpAnimationCurve);
 
@@ -214,7 +229,8 @@ namespace Gameplay.Controllers
 
                 // Checks if the game is running, if the player can interact and if a
                 // given amount of time has passed. If so, shows a hint to the player
-                if (_inputManager.CanDrag && _inputManager.TimeSinceLastInteraction > _config.TimeToShowHint)
+                if (_inputManager.CanDrag && _inputManager.TimeSinceLastInteraction >
+                    ConfigData.TimeToShowHint)
                 {
                     OnShowHint();
                     _inputManager.ResetLastInteraction();
@@ -241,6 +257,8 @@ namespace Gameplay.Controllers
             if(isHighScore)
             {
                 PlayerPrefs.SetInt(HighScoreKey, Score);
+                var clientManager = Services.Resolve<ClientManager>();
+                clientManager.UpdateHighScore((uint)Score);
             }
 
             UnregisterEvents();
@@ -251,7 +269,6 @@ namespace Gameplay.Controllers
         }
 
         #endregion
-
 
         #region Matching
 
@@ -334,7 +351,7 @@ namespace Gameplay.Controllers
             while(tiles.Count > 0)
             {
                 // Calculates the player score
-                Score += tiles.Count * _config.PointsPerTile;
+                Score += tiles.Count * ConfigData.PointsPerTile;
 
                 // Play a sound for the match and destruction
                 _soundsManager.PlayMatchClip();
@@ -368,7 +385,7 @@ namespace Gameplay.Controllers
         {
             // Gets a list of the first possible match and shows it to the player
             var list = _gridManager.GetFirstPossibleMatch();
-            _gridView.PlayHintAnim(list);
+            _ = _gridView.PlayHintAnim(list);
         }
 
         #endregion

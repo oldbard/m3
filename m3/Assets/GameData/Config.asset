@@ -17,21 +17,14 @@ MonoBehaviour:
   TileViewWidth: 1
   TileViewHeight: 1
   DragDetectionThreshold: 10
-  DropAnimationTime: 0.5
-  SwapAnimationTime: 0.5
-  DestroyAnimationTime: 0.5
-  HintAnimationTime: 0.5
-  TimeToShowHint: 10
-  HintCycles: 3
-  GameDuration: 20
-  TimeToShowWarning: 5
-  StartBlinkDelay: 500
-  FullColorBlinkDelay: 200
-  PointsPerTile: 10
-  TileBackgroundPrefab: {fileID: 160020, guid: 561c8e1f04bbfa849a1538301dbab6a3, type: 3}
   TilePrefab: {fileID: -2503264257950215645, guid: 1c9841a63fe5697459d56dde4153f031,
     type: 3}
   TilesVariations: 2
+  LeaderboardItem: {fileID: 82347764473170075, guid: 2ac48d4b10af62141a525814b5e1a6f0,
+    type: 3}
+  UITimerTexture: {fileID: 2800000, guid: e4f70c4c4e82291439a89a06e5f056ef, type: 3}
+  GoldSprite: {fileID: 21300000, guid: 3d31a6b5b7288034ca7bc31d1f02f662, type: 3}
+  GemsSprite: {fileID: 21300000, guid: d7b01eb2fd1ae6f438a6d3470aad7ad3, type: 3}
   _bgms:
   - {fileID: 8300000, guid: 62bdfb8ea2338034a86638fd407a9251, type: 3}
   - {fileID: 8300000, guid: 04f95ddf886752448bbf6f6e35fa756f, type: 3}
@@ -75,12 +68,14 @@ MonoBehaviour:
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300008, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: f12f5a8356ce80b439d8a6ea5b41efcd, type: 3}
+      UIImage: {fileID: 2800000, guid: f09c4e343e0a8e543a092eeccda0f07b, type: 3}
       Animation: {fileID: 9100000, guid: 64ebde7c4183072478ac120b349e9196, type: 2}
     - Body: {fileID: 21300010, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Eye: {fileID: 21300000, guid: feb7791f42a400b4495ac2c50d1aad3e, type: 3}
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300010, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: f12f5a8356ce80b439d8a6ea5b41efcd, type: 3}
+      UIImage: {fileID: 2800000, guid: f09c4e343e0a8e543a092eeccda0f07b, type: 3}
       Animation: {fileID: 9100000, guid: 77b882fcf52e2064492ae16049f31b70, type: 2}
   - TileType: 1
     ViewData:
@@ -89,12 +84,14 @@ MonoBehaviour:
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300004, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: f2475b867d92200488d50e02312e3cae, type: 3}
+      UIImage: {fileID: 2800000, guid: 3444b1a51bce97b40bcfed6eb36be263, type: 3}
       Animation: {fileID: 9100000, guid: 5bc9e8a49d608014e9c27c8f03f02912, type: 2}
     - Body: {fileID: 21300006, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Eye: {fileID: 21300000, guid: bb1140fb33a31cd4a8605d4dd285ddc5, type: 3}
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300006, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: f2475b867d92200488d50e02312e3cae, type: 3}
+      UIImage: {fileID: 2800000, guid: 3444b1a51bce97b40bcfed6eb36be263, type: 3}
       Animation: {fileID: 9100000, guid: 3bfd9f130d6822e46acea15e97983c15, type: 2}
   - TileType: 2
     ViewData:
@@ -103,12 +100,14 @@ MonoBehaviour:
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300016, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: 398ee0f95475148448c2931e923daa83, type: 3}
+      UIImage: {fileID: 2800000, guid: 6ba12b3c488277b4a96d63fcd5f63bc7, type: 3}
       Animation: {fileID: 9100000, guid: b59ab9a3fd11c88469ddbdf38c2dde4a, type: 2}
     - Body: {fileID: 21300018, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Eye: {fileID: 21300008, guid: db81e4b67f1c7004082e7ab26436a393, type: 3}
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300018, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: 398ee0f95475148448c2931e923daa83, type: 3}
+      UIImage: {fileID: 2800000, guid: 6ba12b3c488277b4a96d63fcd5f63bc7, type: 3}
       Animation: {fileID: 9100000, guid: 164d816af839a5d48bae4cf5c8febd32, type: 2}
   - TileType: 3
     ViewData:
@@ -117,12 +116,14 @@ MonoBehaviour:
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300000, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: 398ee0f95475148448c2931e923daa83, type: 3}
+      UIImage: {fileID: 2800000, guid: e776f11a093bf7b4ab76a69457c06482, type: 3}
       Animation: {fileID: 9100000, guid: ee79d33cdc161234782eb3a82337d7b9, type: 2}
     - Body: {fileID: 21300002, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Eye: {fileID: 21300000, guid: 87ca0098775ae6e4ca0a8b28fba4a892, type: 3}
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300002, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: 398ee0f95475148448c2931e923daa83, type: 3}
+      UIImage: {fileID: 2800000, guid: e776f11a093bf7b4ab76a69457c06482, type: 3}
       Animation: {fileID: 9100000, guid: 5b988435c07fb0c4b820c44bfcbfaa59, type: 2}
   - TileType: 4
     ViewData:
@@ -131,10 +132,12 @@ MonoBehaviour:
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300012, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: 5db165493ae2bda4ba0ed395dc464648, type: 3}
+      UIImage: {fileID: 2800000, guid: fe7b24336a5164240930b21a3ff165ed, type: 3}
       Animation: {fileID: 9100000, guid: 440de2521aefa744fafdc7ab2f7d251e, type: 2}
     - Body: {fileID: 21300014, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Eye: {fileID: 21300008, guid: db81e4b67f1c7004082e7ab26436a393, type: 3}
       Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
       Shadow: {fileID: 21300014, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
       Selected: {fileID: 21300000, guid: 5db165493ae2bda4ba0ed395dc464648, type: 3}
+      UIImage: {fileID: 2800000, guid: fe7b24336a5164240930b21a3ff165ed, type: 3}
       Animation: {fileID: 9100000, guid: 971bf437a360d364f9dfae6009e20ee9, type: 2}

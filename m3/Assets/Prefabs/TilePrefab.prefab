@@ -317,6 +317,13 @@ MonoBehaviour:
   _shadow: {fileID: 21235724}
   _selected: {fileID: 611628900163365665}
   _animator: {fileID: 9535724}
+  AppliedTileType: 0
+  TileObject:
+    PosX: 0
+    PosY: 0
+    TileType: 0
+    Valid: 0
+  TargetPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &135724
 GameObject:
   m_ObjectHideFlags: 0
