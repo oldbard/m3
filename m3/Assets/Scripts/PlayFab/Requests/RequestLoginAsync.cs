@@ -13,9 +13,11 @@ namespace Requests
         string _iOSId;
         string _customId;
 
-        bool _pendingUserName;
+        bool _success;
 
-        Dictionary<string, int> _currenciesData;
+        //bool _pendingUserName;
+
+        //Dictionary<string, int> _currenciesData;
         
         bool _isProcessing;
 
@@ -30,7 +32,7 @@ namespace Requests
                 await Task.Yield();
             }
 
-            return new LoginResultAsync(_pendingUserName, _currenciesData);
+            return new LoginResultAsync(_success);// _pendingUserName, _currenciesData);
         }
 
         /// <summary>
@@ -81,12 +83,12 @@ namespace Requests
                     CustomId = _customId,
                     TitleId = PlayFabSettings.TitleId,
                     CreateAccount = true,
-                    InfoRequestParameters = new GetPlayerCombinedInfoRequestParams()
+/*                    InfoRequestParameters = new GetPlayerCombinedInfoRequestParams()
                     {
                         GetPlayerProfile = true,
                         GetUserInventory = true,
                         GetUserVirtualCurrency = true
-                    }
+                    }*/
                 };
 
                 PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccessful, OnLoginFailed);
@@ -102,7 +104,9 @@ namespace Requests
 #if UNITY_EDITOR
             Debug.Log("Login Successful");
 #endif
-            if (result.InfoResultPayload.PlayerProfile == null || string.IsNullOrEmpty(result.InfoResultPayload.PlayerProfile.DisplayName))
+            /*if (result.InfoResultPayload == null ||
+                result.InfoResultPayload.PlayerProfile == null ||
+                string.IsNullOrEmpty(result.InfoResultPayload.PlayerProfile.DisplayName))
             {
 #if UNITY_EDITOR
                 Debug.Log("Pending User Name");
@@ -115,7 +119,9 @@ namespace Requests
                 Debug.Log("User Name is " + result.InfoResultPayload.PlayerProfile.DisplayName);
 #endif
             }
-            _currenciesData = result.InfoResultPayload.UserVirtualCurrency;
+            _currenciesData = result.InfoResultPayload.UserVirtualCurrency;*/
+
+            _success = true;
 
             _isProcessing = false;
         }
@@ -172,13 +178,15 @@ namespace Requests
 
     public class LoginResultAsync : IResultAsync
     {
-        public bool PendingName;
-        public Dictionary<string, int> CurrenciesData;
+        //public bool PendingName;
+        //public Dictionary<string, int> CurrenciesData;
+        public bool Success;
 
-        public LoginResultAsync(bool pendingName, Dictionary<string, int> currenciesData)
+        public LoginResultAsync(bool success)
         {
-            PendingName = pendingName;
-            CurrenciesData = currenciesData;
+            Success = success;
+            //PendingName = pendingName;
+            //CurrenciesData = currenciesData;
         }
     }
 }

@@ -49,7 +49,7 @@ namespace GameData
 
         public void SetLeaderboard(Dictionary<string, int> leaderboard)
         {
-            var ordered = leaderboard.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+            var ordered = leaderboard.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
             Leaderboard = ordered;
         }
     }

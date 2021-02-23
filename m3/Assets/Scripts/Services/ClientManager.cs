@@ -74,9 +74,14 @@ namespace GameServices
                 var loginResult = await new RequestLoginAsync().Process()
                     as LoginResultAsync;
 
+                var getDisplayNameResult = await new RequestGetDisplayNameAsync().Process()
+                    as GetDisplayNameResultAsync;
+
+                var pendingName = string.IsNullOrEmpty(getDisplayNameResult.DisplayName);
+
                 await DoLoadData();
 
-                LoggedIn?.Invoke(loginResult.PendingName);
+                LoggedIn?.Invoke(pendingName);
             }
             catch (Exception e)
             {
@@ -127,6 +132,36 @@ namespace GameServices
 
         #endregion
 
+        #region Get Display Name
+
+        public void SetUserName()
+        {
+            try
+            {
+                _ = DoGetUserName();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
+        }
+
+        async Task DoGetUserName()
+        {
+            try
+            {
+                var getDisplayNameResult = await new RequestGetDisplayNameAsync().Process()
+                    as GetDisplayNameResultAsync;
+
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
+        }
+
+        #endregion
+
         #region Set Display Name
 
         public void SetUserName(string userName)
@@ -161,7 +196,7 @@ namespace GameServices
         #endregion
 
         #region Leaderboard
-        
+
         public void GetLeaderboard()
         {
             try
