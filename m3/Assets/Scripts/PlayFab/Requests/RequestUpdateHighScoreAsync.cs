@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace Requests
 {
+    /// <summary>
+    /// Sends a call to the UpdateHighScore CloudScript function to update the player high score
+    /// </summary>
     public class RequestUpdateHighScoreAsync : IRequestAsync
     {
         bool _isProcessing;
@@ -59,7 +62,9 @@ namespace Requests
             {
                 if (success)
                 {
-                    UnityEngine.Debug.Log("Updated High Score!");
+#if UNITY_EDITOR
+                    Debug.Log("Updated High Score!");
+#endif
                     _suceess = true;
                 }
             }

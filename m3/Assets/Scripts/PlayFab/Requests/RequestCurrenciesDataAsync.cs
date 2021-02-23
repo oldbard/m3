@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace Requests
 {
+    /// <summary>
+    /// Request to get the player currencies data
+    /// </summary>
     public class RequestCurrenciesDataAsync : IRequestAsync
     {
         const string SOFT_CURENCY = "SC";

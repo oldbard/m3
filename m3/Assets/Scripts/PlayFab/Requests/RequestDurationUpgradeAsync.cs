@@ -2,9 +2,15 @@
 using PlayFab.ClientModels;
 using System;
 using System.Threading.Tasks;
+#if UNITY_EDITOR
+using UnityEngine;
+#endif
 
 namespace Requests
 {
+    /// <summary>
+    /// Request which calls the CloudScript function StartDurationUpgrade to start a timer upgrade
+    /// </summary>
     public class RequestDurationUpgradeAsync : IRequestAsync
     {
         bool _isProcessing;
@@ -47,7 +53,9 @@ namespace Requests
             {
                 if (success)
                 {
-                    UnityEngine.Debug.Log("Upgrade Started!");
+#if UNITY_EDITOR
+                    Debug.Log("Upgrade Started!");
+#endif
                     _durationUpgradeSuccesful = true;
                 }
             }

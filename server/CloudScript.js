@@ -20,6 +20,7 @@ handlers.UpdateHighScore = UpdateHighScore;
 
 // Client Calls
 
+// Starts an upgrade for the Duration Timer using SC
 function StartDurationUpgrade() {
     var upgradeDuration = GetUpgradeDurationItem();
     var initialCost = GetUpgradeDurationItemCost(upgradeDuration);
@@ -41,8 +42,10 @@ function StartDurationUpgrade() {
     if (availableSC >= upgradeCost) {
         log.info("Got enough sc to do upgrade.");
 
+        // Discounts the cost from the user
         SubtractUserVirtualCurrency(upgradeCost, GOLD_CURRENCY_CODE);
 
+        // Sets the Upgrade Data
         SetUpgradeData(currentLevel);
 
         return true;
@@ -52,6 +55,7 @@ function StartDurationUpgrade() {
      return false;
 }
 
+// Skips the Upgrade by using HC
 function SkipDurationUpgrade() {
     var upgradeDuration = GetUpgradeDurationItem();
     var initialCost = GetUpgradeDurationItemSkipCost(upgradeDuration);
@@ -68,8 +72,10 @@ function SkipDurationUpgrade() {
     if (availableHC >= skipUpgradeCost) {
         log.info("Got enough hc to do upgrade.");
 
+        // Discounts the cost from the user
         SubtractUserVirtualCurrency(skipUpgradeCost, GEM_CURRENCY_CODE);
 
+        // Sets the Upgrade Data
         SetUpgradeDataFinished(currentLevel + 1);
 
         return true;
@@ -79,6 +85,7 @@ function SkipDurationUpgrade() {
     return false;
 }
 
+// Tries to finish an upgrade if enough time has passed
 function TryFinishUpgradingDuration() {
     var userData = GetUserData();
 
@@ -99,6 +106,7 @@ function TryFinishUpgradingDuration() {
     var timestamp = Number(GetServerTimestamp());
 
     if (initialTimestamp + duration <= timestamp) {
+        // Completes the upgrade
         SetUpgradeDataFinished(currentLevel + 1);
 
         return true;
@@ -109,6 +117,7 @@ function TryFinishUpgradingDuration() {
     return false;
 }
 
+// Updates the Statistics regarding High Score
 function UpdateHighScore(args) {
     var statisticsRequest = {
       PlayFabId: currentPlayerId,
@@ -127,6 +136,7 @@ function UpdateHighScore(args) {
 
 // Get Data Calls
 
+// Gets the Read Only Data from the user
 function GetUserData() {
     var getUserDataRequest = {
         PlayFabId: currentPlayerId,
@@ -144,6 +154,7 @@ function GetUserData() {
     return getUserDataResponse.Data;
 }
 
+// Gets the available SC
 function GetAvailableSC() {
     var inventory = server.GetUserInventory({ PlayFabId: currentPlayerId });
 
@@ -160,6 +171,7 @@ function GetAvailableSC() {
     return inventory.VirtualCurrency[GOLD_CURRENCY_CODE];
 }
 
+// Gets the available HC
 function GetAvailableHC() {
     var inventory = server.GetUserInventory({ PlayFabId: currentPlayerId });
 
@@ -179,6 +191,7 @@ function GetAvailableHC() {
 
 // Set Data Calls
 
+// Sets the Player Data regarding the Upgrade
 function SetUpgradeData(level) {
     var timestamp = GetServerTimestamp();
 
@@ -192,6 +205,7 @@ function SetUpgradeData(level) {
     server.UpdateUserReadOnlyData(updateUserReadOnlyDataRequest);    
 }
 
+// Sets the Player Data regarding the Upgrade as finished
 function SetUpgradeDataFinished(level) {
     var timestamp = GetServerTimestamp();
 
@@ -205,6 +219,7 @@ function SetUpgradeDataFinished(level) {
     server.UpdateUserReadOnlyData(updateUserReadOnlyDataRequest);    
 }
 
+// Discounts currency from the player
 function SubtractUserVirtualCurrency(amount, currencyType) {
     var subtractUserVirtualCurrencyRequest = {
 	    "PlayFabId" : currentPlayerId,
@@ -219,6 +234,7 @@ function SubtractUserVirtualCurrency(amount, currencyType) {
 
 // Utils
 
+// Gets the Cost to upgrade
 function CurrentDurationUpgradeCost(initialCost, currentLevel, increasePerLevel) {
 
     var cost = initialCost;
@@ -233,6 +249,7 @@ function CurrentDurationUpgradeCost(initialCost, currentLevel, increasePerLevel)
     return cost;
 }
 
+// Gets the Duration to upgrade
 function CurrentUpgradeDuration(initialUpgradeDuration, currentLevel, increasePerLevel) {
 
     var duration = initialUpgradeDuration;
@@ -247,6 +264,7 @@ function CurrentUpgradeDuration(initialUpgradeDuration, currentLevel, increasePe
     return duration;
 }
 
+// Gets the Upgrade Catalog Item
 function GetUpgradeDurationItem() {
     var catalog = server.GetCatalogItems({ CatalogVersion: defaultCatalog });
 
@@ -268,6 +286,7 @@ function GetUpgradeDurationItem() {
     return upgradeDuration;
 }
 
+// Gets the base cost to upgrade
 function GetUpgradeDurationItemCost(upgradeDuration) {
     if (!upgradeDuration.VirtualCurrencyPrices) {
         log.error("Catalog Item VCs not found!");
@@ -277,6 +296,7 @@ function GetUpgradeDurationItemCost(upgradeDuration) {
     return upgradeDuration.VirtualCurrencyPrices[GOLD_CURRENCY_CODE];
 }
 
+// Gets the base cost to skip upgrade
 function GetUpgradeDurationItemSkipCost(upgradeDuration) {
     if (!upgradeDuration.VirtualCurrencyPrices) {
         log.error("Catalog Item VCs not found!");
@@ -286,6 +306,7 @@ function GetUpgradeDurationItemSkipCost(upgradeDuration) {
     return upgradeDuration.VirtualCurrencyPrices[GEM_CURRENCY_CODE];
 }
 
+// Gets the level multiplier to upgrade
 function GetUpgradeDurationItemUpgradeMultiplier(upgradeDuration) {
     var catalogItemCustomData = JSON.parse(upgradeDuration.CustomData);
 
@@ -297,6 +318,7 @@ function GetUpgradeDurationItemUpgradeMultiplier(upgradeDuration) {
     return catalogItemCustomData[UPGRADABLE_MULTIPLIER];
 }
 
+// Gets the initial Duration to upgrade
 function GetUpgradeDurationItemInitialDuration(upgradeDuration) {
     var catalogItemCustomData = JSON.parse(upgradeDuration.CustomData);
 
@@ -308,6 +330,7 @@ function GetUpgradeDurationItemInitialDuration(upgradeDuration) {
     return catalogItemCustomData[UPGRADABLE_INITIAL_DURATION];
 }
 
+// Gets the server timestamp (UTC)
 function GetServerTimestamp() {
     var now = new Date();
     var time = now.getTime(); // miliseconds

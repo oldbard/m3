@@ -2,9 +2,15 @@
 using PlayFab.ClientModels;
 using System;
 using System.Threading.Tasks;
+#if UNITY_EDITOR
+using UnityEngine;
+#endif
 
 namespace Requests
 {
+    /// <summary>
+    /// Request which calls the CloudScript function TryFinishUpgradingDuration to try and finish an upgrade
+    /// </summary>
     public class RequestTryFinishUpgradeAsync : IRequestAsync
     {
         bool _isProcessing;
@@ -47,7 +53,9 @@ namespace Requests
             {
                 if (success)
                 {
-                    UnityEngine.Debug.Log("Upgrade Finished!");
+#if UNITY_EDITOR
+                    Debug.Log("Upgrade Finished!");
+#endif
                     _durationUpgradeFinishedSuccesful = true;
                 }
             }

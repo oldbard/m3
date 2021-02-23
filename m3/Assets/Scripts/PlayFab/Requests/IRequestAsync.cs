@@ -1,9 +1,4 @@
-﻿using PlayFab;
-using PlayFab.ClientModels;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using System.Threading.Tasks;
 
 namespace Requests
 {

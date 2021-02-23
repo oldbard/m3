@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace Requests
 {
+    /// <summary>
+    /// Request which sets the player Display Name
+    /// </summary>
     public class RequestSetDisplayNameAsync : IRequestAsync
     {
         bool _isProcessing;

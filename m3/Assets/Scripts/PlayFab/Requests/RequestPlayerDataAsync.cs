@@ -9,6 +9,9 @@ using UnityEngine;
 
 namespace Requests
 {
+    /// <summary>
+    /// Request to get the player read only data
+    /// </summary>
     public class RequestPlayerDataAsync : IRequestAsync
     {
         bool _isProcessing;

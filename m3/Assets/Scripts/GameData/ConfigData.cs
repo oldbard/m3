@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace GameData
 {
+    /// <summary>
+    /// Service containing the Game Persistent Data.
+    /// </summary>
     public class GamePersistentData : IService
     {
         public ConfigData ConfigData;
@@ -54,6 +57,9 @@ namespace GameData
         }
     }
 
+    /// <summary>
+    /// Configuration Data
+    /// </summary>
     public class ConfigData
     {
         // Keys
@@ -149,6 +155,9 @@ namespace GameData
         }
     }
 
+    /// <summary>
+    /// User Data
+    /// </summary>
     public class UserData
     {
         // Keys

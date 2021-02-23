@@ -2,9 +2,15 @@
 using PlayFab.ClientModels;
 using System;
 using System.Threading.Tasks;
+#if UNITY_EDITOR
+using UnityEngine;
+#endif
 
 namespace Requests
 {
+    /// <summary>
+    /// Request which calls the CloudScript function SkipDurationUpgrade to skip the upgrade timer
+    /// </summary>
     public class RequestSkipUpgradeAsync : IRequestAsync
     {
         bool _isProcessing;
@@ -47,7 +53,9 @@ namespace Requests
             {
                 if (success)
                 {
-                    UnityEngine.Debug.Log("Upgrade Skipped!");
+#if UNITY_EDITOR
+                    Debug.Log("Upgrade Skipped!");
+#endif
                     _durationUpgradeSkipSuccesful = true;
                 }
             }

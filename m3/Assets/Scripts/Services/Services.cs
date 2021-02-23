@@ -5,6 +5,9 @@ namespace GameServices
 {
     public interface IService {}
 
+    /// <summary>
+    /// Basic container class that acts as a service to provide access to the main services of the game
+    /// </summary>
     public static class Services
     {
         static Dictionary<Type, IService> _services = new Dictionary<Type, IService>();

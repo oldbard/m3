@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Requests
 {
+    /// <summary>
+    /// Request to get the Timer catalog item
+    /// </summary>
     public class RequestGetDurationUpgradeCatalogAsync : IRequestAsync
     {
         bool _isProcessing;

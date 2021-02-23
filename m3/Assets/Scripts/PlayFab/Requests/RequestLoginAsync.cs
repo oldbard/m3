@@ -1,12 +1,14 @@
 ﻿using PlayFab;
 using PlayFab.ClientModels;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Requests
 {
+    /// <summary>
+    /// Request to attempt to login to PlayFab
+    /// </summary>
     public class RequestLoginAsync : IRequestAsync
     {
         string _androidId;
@@ -14,10 +16,6 @@ namespace Requests
         string _customId;
 
         bool _success;
-
-        //bool _pendingUserName;
-
-        //Dictionary<string, int> _currenciesData;
         
         bool _isProcessing;
 
@@ -32,7 +30,7 @@ namespace Requests
                 await Task.Yield();
             }
 
-            return new LoginResultAsync(_success);// _pendingUserName, _currenciesData);
+            return new LoginResultAsync(_success);
         }
 
         /// <summary>
@@ -46,9 +44,7 @@ namespace Requests
             {
                 if (!string.IsNullOrEmpty(_androidId))
                 {
-#if UNITY_EDITOR
                     Debug.Log("Using Android Device ID: " + _androidId);
-#endif
                     var request = new LoginWithAndroidDeviceIDRequest
                     {
                         AndroidDeviceId = _androidId,
@@ -60,9 +56,7 @@ namespace Requests
                 }
                 else if (!string.IsNullOrEmpty(_iOSId))
                 {
-#if UNITY_EDITOR
                     Debug.Log("Using IOS Device ID: " + _iOSId);
-#endif
                     var request = new LoginWithIOSDeviceIDRequest
                     {
                         DeviceId = _iOSId,
@@ -75,20 +69,12 @@ namespace Requests
             }
             else
             {
-#if UNITY_EDITOR
                 Debug.Log("Using custom device ID: " + _customId);
-#endif
                 var request = new LoginWithCustomIDRequest
                 {
                     CustomId = _customId,
                     TitleId = PlayFabSettings.TitleId,
                     CreateAccount = true,
-/*                    InfoRequestParameters = new GetPlayerCombinedInfoRequestParams()
-                    {
-                        GetPlayerProfile = true,
-                        GetUserInventory = true,
-                        GetUserVirtualCurrency = true
-                    }*/
                 };
 
                 PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccessful, OnLoginFailed);
@@ -101,25 +87,7 @@ namespace Requests
         /// <param name="result">Result object returned from PlayFab server</param>
         void OnLoginSuccessful(LoginResult result)
         {
-#if UNITY_EDITOR
             Debug.Log("Login Successful");
-#endif
-            /*if (result.InfoResultPayload == null ||
-                result.InfoResultPayload.PlayerProfile == null ||
-                string.IsNullOrEmpty(result.InfoResultPayload.PlayerProfile.DisplayName))
-            {
-#if UNITY_EDITOR
-                Debug.Log("Pending User Name");
-#endif
-                _pendingUserName = true;
-            }
-            else
-            {
-#if UNITY_EDITOR
-                Debug.Log("User Name is " + result.InfoResultPayload.PlayerProfile.DisplayName);
-#endif
-            }
-            _currenciesData = result.InfoResultPayload.UserVirtualCurrency;*/
 
             _success = true;
 
@@ -178,15 +146,11 @@ namespace Requests
 
     public class LoginResultAsync : IResultAsync
     {
-        //public bool PendingName;
-        //public Dictionary<string, int> CurrenciesData;
         public bool Success;
 
         public LoginResultAsync(bool success)
         {
             Success = success;
-            //PendingName = pendingName;
-            //CurrenciesData = currenciesData;
         }
     }
 }

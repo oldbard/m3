@@ -7,6 +7,9 @@ using System.Globalization;
 
 namespace GameData
 {
+    /// <summary>
+    /// Model class for the timer catalog item
+    /// </summary>
     public class CatalogConfigData
     {
         const string UpgradePerLevelKey = "UpgradePerLevel";

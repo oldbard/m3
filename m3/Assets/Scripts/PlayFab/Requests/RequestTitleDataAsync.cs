@@ -9,6 +9,9 @@ using UnityEngine;
 
 namespace Requests
 {
+    /// <summary>
+    /// Request to get the Title Data
+    /// </summary>
     public class RequestTitleDataAsync : IRequestAsync
     {
         bool _isProcessing;

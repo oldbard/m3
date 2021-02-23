@@ -9,6 +9,9 @@ using UnityEngine;
 
 namespace Requests
 {
+    /// <summary>
+    /// Request to get the Leaderboard Data
+    /// </summary>
     public class RequestLeaderboardAsync : IRequestAsync
     {
         bool _isProcessing;

@@ -3,11 +3,15 @@ using Requests;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+#if UNITY_EDITOR
 using UnityEngine;
+#endif
 
 namespace GameServices
 {
-    // TODO: Add checks for unity editor
+    /// <summary>
+    /// Service which manages the calls to requests to PlayFab
+    /// </summary>
     public class ClientManager : IService
     {
         #region Declarations
@@ -57,7 +61,9 @@ namespace GameServices
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogError(e.Message);
+#endif
             }
         }
 
@@ -67,6 +73,10 @@ namespace GameServices
 
         #region Login
 
+        /// <summary>
+        /// Logs in PlayFab
+        /// </summary>
+        /// <returns></returns>
         async Task Login()
         {
             try
@@ -99,6 +109,10 @@ namespace GameServices
             _ = DoLoadData();
         }
 
+        /// <summary>
+        /// Loads data from the title and user
+        /// </summary>
+        /// <returns></returns>
         async Task DoLoadData()
         {
             try
@@ -132,38 +146,13 @@ namespace GameServices
 
         #endregion
 
-        #region Get Display Name
-
-        public void SetUserName()
-        {
-            try
-            {
-                _ = DoGetUserName();
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
-            }
-        }
-
-        async Task DoGetUserName()
-        {
-            try
-            {
-                var getDisplayNameResult = await new RequestGetDisplayNameAsync().Process()
-                    as GetDisplayNameResultAsync;
-
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
-            }
-        }
-
-        #endregion
-
         #region Set Display Name
 
+        /// <summary>
+        /// Sets the user Display Name
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
         public void SetUserName(string userName)
         {
             try
@@ -172,10 +161,17 @@ namespace GameServices
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogError(e.Message);
+#endif
             }
         }
 
+        /// <summary>
+        /// Sets the user Display Name
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
         async Task DoSetUserName(string userName)
         {
             try
@@ -189,7 +185,9 @@ namespace GameServices
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogError(e.Message);
+#endif
             }
         }
 
@@ -197,6 +195,9 @@ namespace GameServices
 
         #region Leaderboard
 
+        /// <summary>
+        /// Requests the Leaderboard data
+        /// </summary>
         public void GetLeaderboard()
         {
             try
@@ -205,10 +206,15 @@ namespace GameServices
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogError(e.Message);
+#endif
             }
         }
 
+        /// <summary>
+        /// Requests the Leaderboard data
+        /// </summary>
         async Task DoGetLeaderboard(string leaderboardName)
         {
             try
@@ -220,7 +226,9 @@ namespace GameServices
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogError(e.Message);
+#endif
             }
         }
 
@@ -230,11 +238,17 @@ namespace GameServices
 
         #region Functions
 
+        /// <summary>
+        /// Requests the timer upgrade to be started
+        /// </summary>
         public void StartDurationUpgrade()
         {
             _ = DoStartDurationUpgrade();
         }
 
+        /// <summary>
+        /// Requests the timer upgrade to be started
+        /// </summary>
         async Task DoStartDurationUpgrade()
         {
             try
@@ -258,15 +272,23 @@ namespace GameServices
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"Could not start timer duration upgrade: {e.Message}");
+#endif
             }
         }
 
+        /// <summary>
+        /// Requests the timer upgrade to be skipped
+        /// </summary>
         public void SkipDurationUpgrade()
         {
             _ = DoSkipDurationUpgrade();
         }
 
+        /// <summary>
+        /// Requests the timer upgrade to be skipped
+        /// </summary>
         async Task DoSkipDurationUpgrade()
         {
             try
@@ -290,15 +312,23 @@ namespace GameServices
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"Could not start timer duration upgrade: {e.Message}");
+#endif
             }
         }
 
+        /// <summary>
+        /// Requests the server to try and finish the timer upgrade
+        /// </summary>
         public void VerifyTimerDurationUpgradeFinished()
         {
             _ = DoVerifyTimerDurationUpgradeFinished();
         }
 
+        /// <summary>
+        /// Requests the server to try and finish the timer upgrade
+        /// </summary>
         async Task DoVerifyTimerDurationUpgradeFinished()
         {
             try
@@ -317,15 +347,25 @@ namespace GameServices
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"Could not start timer duration upgrade: {e.Message}");
+#endif
             }
         }
 
+        /// <summary>
+        /// Requests the player High Score to be updated
+        /// </summary>
+        /// <param name="highScore"></param>
         public void UpdateHighScore(uint highScore)
         {
             _ = DoUpdateHighScore(highScore);
         }
 
+        /// <summary>
+        /// Requests the player High Score to be updated
+        /// </summary>
+        /// <param name="highScore"></param>
         async Task DoUpdateHighScore(uint highScore)
         {
             try
@@ -343,7 +383,9 @@ namespace GameServices
             }
             catch (Exception e)
             {
+#if UNITY_EDITOR
                 Debug.LogError($"Could not update high score: {e.Message}");
+#endif
             }
         }
 
