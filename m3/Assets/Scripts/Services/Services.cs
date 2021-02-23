@@ -11,6 +11,8 @@ namespace GameServices
 
         static Services()
         {
+            UnityEngine.PlayerPrefs.DeleteAll();
+            UnityEngine.PlayerPrefs.Save();
             new ClientManager();
         }
 

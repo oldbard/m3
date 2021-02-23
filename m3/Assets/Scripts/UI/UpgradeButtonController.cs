@@ -14,7 +14,7 @@ namespace UI
         [SerializeField] Text _currentValue;
         [SerializeField] Text _timeAndLevel;
         [SerializeField] Image _currency;
-        [SerializeField] GameObject _confirmPanel;
+        [SerializeField] GameObject _processingPanel;
 
         long _initialTime;
         int _duration;
@@ -56,6 +56,7 @@ namespace UI
         {
             if(_timerCoroutine != null)
                 StopCoroutine(_timerCoroutine);
+
             ShowData();
         }
 

@@ -34,6 +34,8 @@ namespace UI
         [SerializeField] Image _loginPanel;
         [SerializeField] Button _loginButton;
         [SerializeField] GameObject _loginControls;
+        [SerializeField] Image _leaderboardPanel;
+        [SerializeField] Transform _leaderboardControls;
 
         [Header("Audio")]
         [SerializeField] AudioSource _backgroundMusic;
@@ -86,6 +88,12 @@ namespace UI
             _clientManager = Services.Resolve<ClientManager>();
 
             RegisterEvents();
+
+            if(_clientManager.IsLoggedIn)
+            {
+                _clientManager.LoadData();
+                ToggleLoginControler(false);
+            }
 
             _goldText.text = "0";
             _gemsText.text = "0";
@@ -216,6 +224,32 @@ namespace UI
         {
             _backgroundMusic.Stop();
             SceneManager.LoadScene("Gameplay");
+        }
+
+        public void OnShowLeaderboard()
+        {
+            for (int i = 0; i < _leaderboardControls.childCount; i++)
+            {
+                Destroy(_leaderboardControls.GetChild(i));
+            }
+
+            int pos = 1;
+            foreach (var player in _gamePersistentData.Leaderboard)
+            {
+                var controller = GameObject.Instantiate(_config.LeaderboardItem,
+                    _leaderboardControls).GetComponent<LeaderboardController>();
+
+                controller.Init(pos, player.Key, player.Value);
+
+                pos++;
+            }
+
+            _leaderboardPanel.gameObject.SetActive(true);
+        }
+
+        public void OnHideLeaderboard()
+        {
+            _leaderboardPanel.gameObject.SetActive(false);
         }
 
         #region Login

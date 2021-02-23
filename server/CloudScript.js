@@ -8,6 +8,7 @@ const UPGRADABLE_TIMESTAMP = 'UpgradeDurationTimestamp';
 const UPGRADABLE_MULTIPLIER = 'UpgradeMultiplier';
 const UPGRADABLE_INITIAL_DURATION = 'InitialValue';
 const CATALOG_ITEM = "Timer";
+const HIGHSCORE = "HighScore";
 
 
 // Handlers
@@ -15,7 +16,7 @@ const CATALOG_ITEM = "Timer";
 handlers.StartDurationUpgrade = StartDurationUpgrade;
 handlers.SkipDurationUpgrade = SkipDurationUpgrade;
 handlers.TryFinishUpgradingDuration = TryFinishUpgradingDuration;
-
+handlers.UpdateHighScore = UpdateHighScore;
 
 // Client Calls
 
@@ -106,6 +107,21 @@ function TryFinishUpgradingDuration() {
     log.info("Time Left: " + initialTimestamp + duration - timestamp);
 
     return false;
+}
+
+function UpdateHighScore(args) {
+    var statisticsRequest = {
+      PlayFabId: currentPlayerId,
+      Statistics: [{
+        StatisticName: HIGHSCORE,
+        Value: args.highScore
+      }]
+    };
+
+    var statResult = server.UpdatePlayerStatistics(statisticsRequest);
+    log.info(statResult);
+
+    return true;
 }
 
 

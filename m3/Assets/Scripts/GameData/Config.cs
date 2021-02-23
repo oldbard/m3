@@ -51,6 +51,7 @@ namespace GameData
         [Header("Prefabs")]
         public TileView TilePrefab;
         public int TilesVariations;
+        public GameObject LeaderboardItem;
         
         [Header("Textures")]
         public Texture2D UITimerTexture;

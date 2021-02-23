@@ -257,6 +257,8 @@ namespace Gameplay.Controllers
             if(isHighScore)
             {
                 PlayerPrefs.SetInt(HighScoreKey, Score);
+                var clientManager = Services.Resolve<ClientManager>();
+                clientManager.UpdateHighScore((uint)Score);
             }
 
             UnregisterEvents();

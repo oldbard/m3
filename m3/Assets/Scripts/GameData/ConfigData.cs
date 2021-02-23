@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace GameData
 {
@@ -9,6 +10,8 @@ namespace GameData
     {
         public ConfigData ConfigData;
         public UserData UserData;
+
+        public Dictionary<string, int> Leaderboard;
 
         public GamePersistentData()
         {
@@ -19,14 +22,14 @@ namespace GameData
         }
 
         public void ParseData(Dictionary<string, string> configData, Dictionary<string, string> playerData,
-            Dictionary<string, int> currenciesData, CatalogConfigData catalog)
+            uint sc, uint hc, CatalogConfigData catalog)
         {
             ConfigData.Catalog = catalog;
 
             ConfigData.ParseData(configData);
 
             ParseUpgradablesData(playerData);
-            ParseCurrenciesData(currenciesData);
+            ParseCurrenciesData(sc, hc);
         }
 
         public void ParseUpgradablesData(Dictionary<string, string> configData)
@@ -42,6 +45,12 @@ namespace GameData
         public void ParseCurrenciesData(uint sc, uint hc)
         {
             UserData.ParseCurrenciesData(sc, hc);
+        }
+
+        public void SetLeaderboard(Dictionary<string, int> leaderboard)
+        {
+            var ordered = leaderboard.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+            Leaderboard = ordered;
         }
     }
 
