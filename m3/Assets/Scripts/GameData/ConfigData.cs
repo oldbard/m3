@@ -1,39 +1,47 @@
-﻿using PlayFab;
-using PlayFab.Json;
+﻿using GameServices;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
 namespace GameData
 {
-    public class GamePersistentData
+    public class GamePersistentData : IService
     {
-        const string UpgradablesKey = "Upgradables";
-
         public ConfigData ConfigData;
         public UserData UserData;
 
-        public static GamePersistentData Instance;
-
         public GamePersistentData()
         {
-            Instance = this;
+            Services.RegisterService<GamePersistentData>(this);
 
             ConfigData = new ConfigData();
             UserData = new UserData();
         }
 
-        public void ParseData(Dictionary<string, string> configData,
+        public void ParseData(Dictionary<string, string> configData, Dictionary<string, string> playerData,
             Dictionary<string, int> currenciesData, CatalogConfigData catalog)
         {
-            Instance = this;
-
             ConfigData.Catalog = catalog;
 
             ConfigData.ParseData(configData);
 
-            var upgradablesData = configData[UpgradablesKey];
-            UserData.ParseData(currenciesData, upgradablesData);
+            ParseUpgradablesData(playerData);
+            ParseCurrenciesData(currenciesData);
+        }
+
+        public void ParseUpgradablesData(Dictionary<string, string> configData)
+        {
+            UserData.ParseUpgradablesData(configData);
+        }
+
+        public void ParseCurrenciesData(Dictionary<string, int> currenciesData)
+        {
+            UserData.ParseData(currenciesData);
+        }
+
+        public void ParseCurrenciesData(uint sc, uint hc)
+        {
+            UserData.ParseCurrenciesData(sc, hc);
         }
     }
 
@@ -73,12 +81,28 @@ namespace GameData
         // Upgradables
         public CatalogConfigData Catalog;
 
+
+        GamePersistentData _gamePersistentData;
+        
+        GamePersistentData GamePersistentData
+        {
+            get
+            {
+                if(_gamePersistentData == null)
+                {
+                    _gamePersistentData = Services.Resolve<GamePersistentData>();
+                }
+
+                return _gamePersistentData;
+            }
+        }
+
         public int GameDuration
         {
             get
             {
                 var duration = _initialGameDuration;
-                var level = GamePersistentData.Instance.UserData.DurationLevel;
+                var level = GamePersistentData.UserData.DurationLevel;
 
                 for (int i = 1; i < level; i++)
                 {
@@ -88,7 +112,6 @@ namespace GameData
                 return duration;
             }
         }
-
 
         public void ParseData(Dictionary<string, string> configData)
         {
@@ -122,24 +145,24 @@ namespace GameData
         // Keys
         const string GoldKey = "SC";
         const string GemsKey = "HC";
-        const string UpgradablesLevelKey = "Level";
-        const string UpgradablesTimestampKey = "UpgradeStartTimestamp";
+        const string UpgradablesLevelKey = "UpgradeDurationLevel";
+        const string UpgradablesTimestampKey = "UpgradeDurationTimestamp";
 
-        int _gold;
+        uint _gold;
 
-        public int Gold
+        public uint Gold
         {
             get => _gold;
         }
 
-        int _gems;
+        uint _gems;
 
-        public int Gems
+        public uint Gems
         {
             get => _gems;
         }
 
-        int _matchDurationLevel;
+        int _matchDurationLevel = 1;
 
         public int DurationLevel
         {
@@ -158,19 +181,18 @@ namespace GameData
             get => _matchDurationUpgradeTimestamp > 0;
         }
 
-        public Action<int> GoldChanged;
-        public Action<int> GemsChanged;
+        public Action<uint> GoldChanged;
+        public Action<uint> GemsChanged;
         public Action DataLoaded;
 
-        public void ParseData(Dictionary<string, int> currenciesData, string upgradablesData)
+        public void ParseData(Dictionary<string, int> currenciesData)
         {
             try
             {
-                AddGold(currenciesData[GoldKey]);
-                AddGems(currenciesData[GemsKey]);
-                ParseUpgradablesData(upgradablesData);
+                var sc = (uint)currenciesData[GoldKey];
+                var hc = (uint)currenciesData[GemsKey];
 
-                DataLoaded?.Invoke();
+                ParseCurrenciesData(sc, hc);
             }
             catch (Exception e)
             {
@@ -178,61 +200,49 @@ namespace GameData
             }
         }
 
-        void ParseUpgradablesData(string upgradablesData)
+        public void ParseCurrenciesData(uint sc, uint hc)
         {
-            var plugin = PluginManager.GetPlugin<ISerializerPlugin>
-                (PluginContract.PlayFab_Serializer);
+            SetGold(sc);
+            SetGems(hc);
 
-            var jsonObject = (JsonObject)plugin.DeserializeObject(upgradablesData);
-
-            object jsonValue;
-            int level;
-            long timeStamp;
-
-            if (jsonObject.TryGetValue(UpgradablesLevelKey, out jsonValue))
-            {
-                int.TryParse(jsonValue.ToString(), out level);
-            }
-            else
-            {
-                throw new Exception($"Could not parse the field {UpgradablesLevelKey}");
-            }
-
-            if (jsonObject.TryGetValue(UpgradablesTimestampKey, out jsonValue))
-            {
-                long.TryParse(jsonValue.ToString(), out timeStamp);
-            }
-            else
-            {
-                throw new Exception($"Could not parse the field {UpgradablesTimestampKey}");
-            }
-
-            _matchDurationLevel = level;
-            _matchDurationUpgradeTimestamp = timeStamp;
+            DataLoaded?.Invoke();
         }
 
-        public void AddGold(int amount)
+        public void ParseUpgradablesData(Dictionary<string, string> configData)
         {
-            _gold += amount;
+            if (configData.Count == 0) return;
+
+            int.TryParse(configData[UpgradablesLevelKey], out _matchDurationLevel);
+            long.TryParse(configData[UpgradablesTimestampKey], out _matchDurationUpgradeTimestamp);
+        }
+
+        public void SetGold(uint amount)
+        {
+            _gold = amount;
             GoldChanged?.Invoke(_gold);
         }
 
-        public void AddGems(int amount)
+        public void DecreaseGold(uint amount)
         {
-            _gems += amount;
+            _gold -= amount;
+            GoldChanged?.Invoke(_gold);
+        }
+
+        public void SetGems(uint amount)
+        {
+            _gems = amount;
             GemsChanged?.Invoke(_gems);
         }
 
-        // TODO: Remove this
-        public void SetTimer(long timeStamp)
+        public void DecreaseGems(uint amount)
         {
-            _matchDurationUpgradeTimestamp = timeStamp;
+            _gems -= amount;
+            GemsChanged?.Invoke(_gems);
         }
 
-        // TODO: Remove this
-        public void SetTimerLevel(int level)
+        public void SetDurationUpgradeTime(long timeStamp)
         {
-            _matchDurationLevel = level;
+            _matchDurationUpgradeTimestamp = timeStamp;
         }
     }
 }

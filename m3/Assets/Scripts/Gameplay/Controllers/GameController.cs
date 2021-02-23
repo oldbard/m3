@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GameData;
 using Gameplay.Animations;
 using Gameplay.Views;
+using GameServices;
 using Shared;
 using Sounds;
 using UI;
@@ -75,8 +76,23 @@ namespace Gameplay.Controllers
             }
         }
 
+        GamePersistentData _gamePersistentData;
+
+        ConfigData ConfigData
+        {
+            get
+            {
+                if (_gamePersistentData == null)
+                {
+                    _gamePersistentData = Services.Resolve<GamePersistentData>();
+                }
+
+                return _gamePersistentData.ConfigData;
+            }
+        }
+
         #endregion
-        
+
         #region Initialization
 
         /// <summary>
@@ -109,7 +125,7 @@ namespace Gameplay.Controllers
         {
             _inputManager.DisableInput();
 
-            var duration = GamePersistentData.Instance.ConfigData.GameDuration;
+            var duration = ConfigData.GameDuration;
 
             _animationsController = new AnimationsController(_config.LerpAnimationCurve);
 
@@ -214,7 +230,7 @@ namespace Gameplay.Controllers
                 // Checks if the game is running, if the player can interact and if a
                 // given amount of time has passed. If so, shows a hint to the player
                 if (_inputManager.CanDrag && _inputManager.TimeSinceLastInteraction >
-                    GamePersistentData.Instance.ConfigData.TimeToShowHint)
+                    ConfigData.TimeToShowHint)
                 {
                     OnShowHint();
                     _inputManager.ResetLastInteraction();
@@ -333,7 +349,7 @@ namespace Gameplay.Controllers
             while(tiles.Count > 0)
             {
                 // Calculates the player score
-                Score += tiles.Count * GamePersistentData.Instance.ConfigData.PointsPerTile;
+                Score += tiles.Count * ConfigData.PointsPerTile;
 
                 // Play a sound for the match and destruction
                 _soundsManager.PlayMatchClip();

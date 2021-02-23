@@ -1,64 +1,36 @@
-﻿using GameData;
-using PlayFab;
+﻿using PlayFab;
 using PlayFab.ClientModels;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Client
+namespace Requests
 {
-    public class PlayFabClient
+    public class RequestLoginAsync : IRequestAsync
     {
-        #region Declarations
-
-        public readonly List<string> ContentTitleDataKeys = new List<string>
-        { 
-            "DestroyAnimationTime",
-            "DropAnimationTime",
-            "FullColorBlinkDelay",
-            "GameDuration",
-            "HintAnimationTime",
-            "HintCycles",
-            "PointsPerTile",
-            "StartToBlinkDelay",
-            "SwapAnimationTime",
-            "TimeToShowHint",
-            "TimeToShowWarning",
-            "Upgradables"
-        };
-
         string _androidId;
         string _iOSId;
         string _customId;
 
-        Dictionary<string, int> _currenciesData;
-        Dictionary<string, string> _gameData;
-        CatalogConfigData _catalog;
-
-        string _userName;
-
-        bool _loggingIn;
-        bool _gettingGameData;
-        bool _gettingCatalog;
-        bool _updatingPlayerName;
-
         bool _pendingUserName;
 
-        #endregion
+        Dictionary<string, int> _currenciesData;
+        
+        bool _isProcessing;
 
-        #region API Calls
+        public bool IsProcessing => _isProcessing;
 
-        public async Task<(Dictionary<string, int>, bool)> Login()
+        public async Task<IResultAsync> Process()
         {
             LoginWithDeviceId();
 
-            while(_loggingIn)
+            while (_isProcessing)
             {
                 await Task.Yield();
             }
 
-            return (_currenciesData, _pendingUserName);
+            return new LoginResultAsync(_pendingUserName, _currenciesData);
         }
 
         /// <summary>
@@ -66,13 +38,15 @@ namespace Client
         /// </summary>
         void LoginWithDeviceId()
         {
-            _loggingIn = true;
+            _isProcessing = true;
 
             if (FillDeviceId())
             {
                 if (!string.IsNullOrEmpty(_androidId))
                 {
+#if UNITY_EDITOR
                     Debug.Log("Using Android Device ID: " + _androidId);
+#endif
                     var request = new LoginWithAndroidDeviceIDRequest
                     {
                         AndroidDeviceId = _androidId,
@@ -84,7 +58,9 @@ namespace Client
                 }
                 else if (!string.IsNullOrEmpty(_iOSId))
                 {
+#if UNITY_EDITOR
                     Debug.Log("Using IOS Device ID: " + _iOSId);
+#endif
                     var request = new LoginWithIOSDeviceIDRequest
                     {
                         DeviceId = _iOSId,
@@ -97,7 +73,9 @@ namespace Client
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.Log("Using custom device ID: " + _customId);
+#endif
                 var request = new LoginWithCustomIDRequest
                 {
                     CustomId = _customId,
@@ -115,91 +93,31 @@ namespace Client
             }
         }
 
-        public async Task<Dictionary<string, string>> GetGameData()
-        {
-            RequestGameData();
-
-            while(_gettingGameData)
-            {
-                await Task.Yield();
-            }
-
-            return _gameData;
-        }
-
-        void RequestGameData()
-        {
-            _gettingGameData = true;
-
-            var request = new GetTitleDataRequest { Keys = ContentTitleDataKeys };
-            PlayFabClientAPI.GetTitleData(request, OnGetTitleDataSuccessful, OnGetTitleDataFailed);
-        }
-
-        public async Task<string> SetUserName(string userName)
-        {
-            UpdatePlayerName(userName);
-
-            while(_updatingPlayerName)
-            {
-                await Task.Yield();
-            }
-
-            return _userName;
-        }
-
-        void UpdatePlayerName(string userName)
-        {
-            _updatingPlayerName = true;
-
-            var request = new UpdateUserTitleDisplayNameRequest { DisplayName = userName };
-            PlayFabClientAPI.UpdateUserTitleDisplayName(request, OnSetDisplayNameSuccessful, OnSetDisplayNameFailed);
-        }
-
-        public async Task<CatalogConfigData> GetCatalogItems()
-        {
-            RequestCatalogItems();
-
-            while (_gettingCatalog)
-            {
-                await Task.Yield();
-            }
-
-            return _catalog;
-        }
-
-        void RequestCatalogItems()
-        {
-            _gettingCatalog = true;
-
-            var req = new GetCatalogItemsRequest { CatalogVersion = "1" };
-
-            PlayFabClientAPI.GetCatalogItems(req, OnCatalogRequestSuccessful, OnCatalogRequestFailed);
-        }
-
-        #endregion
-
-        #region Callbacks
-
         /// <summary>
         /// Called on a successful login attempt
         /// </summary>
         /// <param name="result">Result object returned from PlayFab server</param>
         void OnLoginSuccessful(LoginResult result)
         {
+#if UNITY_EDITOR
             Debug.Log("Login Successful");
-
-            if(result.InfoResultPayload.PlayerProfile == null || string.IsNullOrEmpty(result.InfoResultPayload.PlayerProfile.DisplayName))
+#endif
+            if (result.InfoResultPayload.PlayerProfile == null || string.IsNullOrEmpty(result.InfoResultPayload.PlayerProfile.DisplayName))
             {
+#if UNITY_EDITOR
                 Debug.Log("Pending User Name");
+#endif
                 _pendingUserName = true;
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.Log("User Name is " + result.InfoResultPayload.PlayerProfile.DisplayName);
+#endif
             }
             _currenciesData = result.InfoResultPayload.UserVirtualCurrency;
 
-            _loggingIn = false;
+            _isProcessing = false;
         }
 
         /// <summary>
@@ -208,58 +126,10 @@ namespace Client
         /// <param name="result">Result object returned from PlayFab server</param>
         void OnLoginFailed(PlayFabError error)
         {
+            _isProcessing = false;
+
             throw new Exception($"Login Failed! {error.ErrorMessage}");
         }
-
-        void OnSetDisplayNameSuccessful(UpdateUserTitleDisplayNameResult result)
-        {
-            _userName = result.DisplayName;
-            
-            Debug.Log("Successfully changed Display Name");
-
-            _updatingPlayerName = false;
-        }
-
-        void OnSetDisplayNameFailed(PlayFabError error)
-        {
-            throw new Exception($"Failed to change Display Name. {error.ErrorMessage}");
-        }
-
-        void OnGetTitleDataSuccessful(GetTitleDataResult result)
-        {
-            Debug.Log("Managed to get the title data");
-            _gameData = result.Data;
-
-            _gettingGameData = false;
-        }
-
-        void OnGetTitleDataFailed(PlayFabError error)
-        {
-            throw new Exception($"Failed to get the title data. {error.ErrorMessage}");
-        }
-
-        void OnCatalogRequestSuccessful(GetCatalogItemsResult result)
-        {
-            const string SoftCurrency = "SC";
-            const string HardCurrency = "HC";
-
-            var catalogItem = result.Catalog[0];
-
-            _catalog = new CatalogConfigData();
-            _catalog.Parse(catalogItem.ItemId, catalogItem.VirtualCurrencyPrices[SoftCurrency],
-                catalogItem.VirtualCurrencyPrices[HardCurrency], catalogItem.CustomData);
-
-            _gettingCatalog = false;
-        }
-
-        void OnCatalogRequestFailed(PlayFabError error)
-        {
-            throw new Exception($"Failed to get shop catalog. {error.ErrorMessage}");
-        }
-
-        #endregion
-
-        #region Utils
 
         /// <summary>
         /// Gets the device identifier and updates the static variables
@@ -298,7 +168,17 @@ namespace Client
         {
             return Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer;
         }
+    }
 
-        #endregion
+    public class LoginResultAsync : IResultAsync
+    {
+        public bool PendingName;
+        public Dictionary<string, int> CurrenciesData;
+
+        public LoginResultAsync(bool pendingName, Dictionary<string, int> currenciesData)
+        {
+            PendingName = pendingName;
+            CurrenciesData = currenciesData;
+        }
     }
 }

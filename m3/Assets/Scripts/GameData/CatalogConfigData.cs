@@ -1,4 +1,5 @@
-﻿using PlayFab;
+﻿using GameServices;
+using PlayFab;
 using PlayFab.Json;
 using Shared;
 using System;
@@ -23,6 +24,21 @@ namespace GameData
         float _upgradeCostMultiplier;
         int _initialUpgradeDuration;
 
+        GamePersistentData _gamePersistentData;
+
+        UserData UserData
+        {
+            get
+            {
+                if (_gamePersistentData == null)
+                {
+                    _gamePersistentData = Services.Resolve<GamePersistentData>();
+                }
+
+                return _gamePersistentData.UserData;
+            }
+        }
+
         public int UpgradePerLevel { get => _upgradePerLevel; }
 
         public int CurrentValue
@@ -30,7 +46,7 @@ namespace GameData
             get
             {
                 var curValue = _initialValue;
-                var level = GamePersistentData.Instance.UserData.DurationLevel;
+                var level = UserData.DurationLevel;
 
                 for(int i = 1; i < level; i++)
                 {
@@ -46,7 +62,7 @@ namespace GameData
             get
             {
                 var cost = (float)_initialCost;
-                var level = GamePersistentData.Instance.UserData.DurationLevel;
+                var level = UserData.DurationLevel;
 
                 for (var i = 1; i < level; i++)
                 {
@@ -62,7 +78,7 @@ namespace GameData
             get
             {
                 var cost = (float)_initialSkipCost;
-                var level = GamePersistentData.Instance.UserData.DurationLevel;
+                var level = UserData.DurationLevel;
 
                 for (var i = 1; i < level; i++)
                 {
@@ -78,7 +94,7 @@ namespace GameData
             get
             {
                 var duration = (float)_initialUpgradeDuration;
-                var level = GamePersistentData.Instance.UserData.DurationLevel;
+                var level = UserData.DurationLevel;
 
                 for (var i = 1; i < level; i++)
                 {

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using GameData;
 using Gameplay.Animations;
+using GameServices;
 using Shared;
 using UI;
 using UnityEngine;
@@ -64,6 +65,21 @@ namespace Gameplay.Views
         /// <param name="x">The Tile Column</param>
         /// <param name="y">The Tile Row</param>
         private TileObjectView this[int x, int y] => GetTileAt(x, y);
+
+        GamePersistentData _gamePersistentData;
+
+        ConfigData ConfigData
+        {
+            get
+            {
+                if (_gamePersistentData == null)
+                {
+                    _gamePersistentData = Services.Resolve<GamePersistentData>();
+                }
+
+                return _gamePersistentData.ConfigData;
+            }
+        }
 
         #endregion
 
@@ -370,7 +386,7 @@ namespace Gameplay.Views
         {
             var viewTiles = GetViewTiles(tilesToUpdate, true);
             await _animationsController.PlayTilesPositionAnim(viewTiles,
-                GamePersistentData.Instance.ConfigData.DropAnimationTime);
+                ConfigData.DropAnimationTime);
 
             // Tags the view tile as spawned
             for (var i = 0; i < viewTiles.Count; i++)
@@ -405,7 +421,7 @@ namespace Gameplay.Views
             _tilesBeingAnimated.Add(tileView2);
 
             await _animationsController.PlayTilesPositionAnim(_tilesBeingAnimated,
-                GamePersistentData.Instance.ConfigData.SwapAnimationTime);
+                ConfigData.SwapAnimationTime);
         }
 
         /// <summary>
@@ -416,7 +432,7 @@ namespace Gameplay.Views
         {
             var tiles = GetViewTiles(tilesMatched);
             await _animationsController.PlayTilesScaleAnim(tiles,
-                GamePersistentData.Instance.ConfigData.SwapAnimationTime);
+                ConfigData.SwapAnimationTime);
 
             // Despawn the specific tile
             for (var i = 0; i < tiles.Count; i++)
@@ -435,7 +451,7 @@ namespace Gameplay.Views
             var tiles = GetViewTiles(tilesMatched);
 
             // We animate it as many times as it is configured
-            for (int j = 0; j < GamePersistentData.Instance.ConfigData.HintCycles; j++)
+            for (int j = 0; j < ConfigData.HintCycles; j++)
             {
                 // Enables the highlight sprite and sets it's alpha to 0
                 for (var i = 0; i < tiles.Count; i++)
@@ -447,11 +463,11 @@ namespace Gameplay.Views
 
                 // Shows background
                 await _animationsController.PlayTilesBackgroundAlphaAnim(tiles,
-                    GamePersistentData.Instance.ConfigData.HintAnimationTime * 0.5f, true);
+                    ConfigData.HintAnimationTime * 0.5f, true);
 
                 // Hides background
                 await _animationsController.PlayTilesBackgroundAlphaAnim(tiles,
-                    GamePersistentData.Instance.ConfigData.HintAnimationTime * 0.5f, false);
+                    ConfigData.HintAnimationTime * 0.5f, false);
             }
 
             // Disables the high lighting
