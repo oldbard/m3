@@ -30,11 +30,15 @@ namespace GameServices
             "TimeToShowWarning"
         };
 
+        readonly string LeaderboardName = "HighScore";
+
         GamePersistentData _gameData;
 
         public Action<bool> LoggedIn;
         public Action<bool> StartedDurationUpgrade;
         public Action<bool> UpgradeCompleted;
+
+        public bool IsLoggedIn;
 
         #endregion
 
@@ -48,6 +52,8 @@ namespace GameServices
                 _gameData = new GamePersistentData();
 
                 _ = Login();
+
+                IsLoggedIn = true;
             }
             catch (Exception e)
             {
@@ -68,17 +74,7 @@ namespace GameServices
                 var loginResult = await new RequestLoginAsync().Process()
                     as LoginResultAsync;
 
-                var gameTitleDataResult = await new RequestTitleDataAsync(ContentTitleDataKeys).Process()
-                    as GameTitleDataResultAsync;
-
-                var gamePlayerDataResult = await new RequestPlayerDataAsync(PlayerDataKey).Process()
-                    as GamePlayerDataResultAsync;
-
-                var durationUpgradeDataResult = await new RequestGetDurationUpgradeCatalogAsync().Process()
-                    as DurationUpgradeCatalogResultAsync;
-
-                _gameData.ParseData(gameTitleDataResult.GameData, gamePlayerDataResult.PlayerData,
-                    loginResult.CurrenciesData, durationUpgradeDataResult.DurationUpgradeItem);
+                await DoLoadData();
 
                 LoggedIn?.Invoke(loginResult.PendingName);
             }
@@ -87,6 +83,46 @@ namespace GameServices
                 throw e;
             }
 
+        }
+
+        #endregion
+
+        #region LoadData()
+
+        public void LoadData()
+        {
+            _ = DoLoadData();
+        }
+
+        async Task DoLoadData()
+        {
+            try
+            {
+                var gameTitleDataResult = await new RequestTitleDataAsync(ContentTitleDataKeys).Process()
+                    as GameTitleDataResultAsync;
+
+                var gamePlayerDataResult = await new RequestPlayerDataAsync(PlayerDataKey).Process()
+                    as GamePlayerDataResultAsync;
+
+                var gameCurrenciesDataResult = await new RequestCurrenciesDataAsync().Process()
+                    as GameCurrenciesDataResultAsync;
+
+                var durationUpgradeDataResult = await new RequestGetDurationUpgradeCatalogAsync().Process()
+                    as DurationUpgradeCatalogResultAsync;
+
+                var leaderboardResult = await new RequestLeaderboardAsync(LeaderboardName).Process()
+                    as GameLeaderboardResultAsync;
+
+                _gameData.ParseData(gameTitleDataResult.GameData, gamePlayerDataResult.PlayerData,
+                    gameCurrenciesDataResult.SC, gameCurrenciesDataResult.HC,
+                    durationUpgradeDataResult.DurationUpgradeItem);
+
+                _gameData.SetLeaderboard(leaderboardResult.Leaderboard);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
         #endregion
@@ -115,6 +151,37 @@ namespace GameServices
                 // TODO: Compare if it is the same with the result?
 
                 LoggedIn?.Invoke(false);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
+        }
+
+        #endregion
+
+        #region Leaderboard
+        
+        public void GetLeaderboard()
+        {
+            try
+            {
+                _ = DoGetLeaderboard(LeaderboardName);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
+        }
+
+        async Task DoGetLeaderboard(string leaderboardName)
+        {
+            try
+            {
+                var leaderboardResult = await new RequestLeaderboardAsync(leaderboardName).Process()
+                    as GameLeaderboardResultAsync;
+
+                _gameData.SetLeaderboard(leaderboardResult.Leaderboard);
             }
             catch (Exception e)
             {
@@ -194,28 +261,54 @@ namespace GameServices
 
         public void VerifyTimerDurationUpgradeFinished()
         {
-            _ = DoVerifyTimerDurationUpgradeEnded();
+            _ = DoVerifyTimerDurationUpgradeFinished();
         }
 
-        async Task DoVerifyTimerDurationUpgradeEnded()
+        async Task DoVerifyTimerDurationUpgradeFinished()
         {
             try
             {
-                var durationTryFinishUpgradeResult = await new RequestTryFinishUpgradeAsync().Process()
+                var tryFinishUpgradeResult = await new RequestTryFinishUpgradeAsync().Process()
                     as DurationUpgradeTryFinishResultAsync;
 
-                if (durationTryFinishUpgradeResult.Success)
+                if (tryFinishUpgradeResult.Success)
                 {
                     var gamePlayerDataResult = await new RequestPlayerDataAsync(PlayerDataKey).Process()
                         as GamePlayerDataResultAsync;
 
                     _gameData.ParseUpgradablesData(gamePlayerDataResult.PlayerData);
                 }
-                UpgradeCompleted?.Invoke(durationTryFinishUpgradeResult.Success);
+                UpgradeCompleted?.Invoke(tryFinishUpgradeResult.Success);
             }
             catch (Exception e)
             {
                 Debug.LogError($"Could not start timer duration upgrade: {e.Message}");
+            }
+        }
+
+        public void UpdateHighScore(uint highScore)
+        {
+            _ = DoUpdateHighScore(highScore);
+        }
+
+        async Task DoUpdateHighScore(uint highScore)
+        {
+            try
+            {
+                var updateHighScoreResult = await new RequestUpdateHighScoreAsync(highScore).Process()
+                    as GameUpdateHighScoreResultAsync;
+
+                if (updateHighScoreResult.Success)
+                {
+                    var leaderboardResult = await new RequestLeaderboardAsync(LeaderboardName).Process()
+                        as GameLeaderboardResultAsync;
+
+                    _gameData.SetLeaderboard(leaderboardResult.Leaderboard);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Could not update high score: {e.Message}");
             }
         }
 
