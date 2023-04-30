@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.oldbard.services.match3": {
+      "version": "file:com.oldbard.services.match3",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+      }
+    },
     "com.unity.collab-proxy": {
       "version": "2.0.3",
       "depth": 0,

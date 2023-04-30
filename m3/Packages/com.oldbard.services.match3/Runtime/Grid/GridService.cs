@@ -1,42 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using GameData;
 using Random = System.Random;
 
-namespace Shared
+namespace OldBard.Services.Match3.Grid
 {
     /// <summary>
-    /// TileObject model data.
+    /// GridService. Controls the grid logic.
     /// </summary>
-    [Serializable]
-    public class TileObject
-    {
-        public int PosX;
-        public int PosY;
-        public GridManager.TileType TileType;
-        public bool Valid;
-    }
-
-    /// <summary>
-    /// GridManager. Controls the grid logic.
-    /// </summary>
-    public class GridManager : IDisposable
+    public class GridService : IDisposable
     {
         #region Declarations
-
-        /// <summary>
-        /// Enumeration of the available Tile Types
-        /// </summary>
-        public enum TileType
-        {
-            Blue,
-            Green,
-            Orange,
-            Red,
-            Yellow,
-            Count
-        }
 
         /// <summary>
         /// Enumeration of the possible drag directions
@@ -80,9 +53,14 @@ namespace Shared
         readonly int _tilesVariations;
 
         #endregion
-        
+
         #region Accessors / Properties
-        
+
+        /// <summary>
+        /// Settings for the Grid
+        /// </summary>
+        public GridSettings GridSettings;
+
         /// <summary>
         /// Checks if there are any possible matches available
         /// </summary>
@@ -137,8 +115,10 @@ namespace Shared
         /// <param name="width">Grid width</param>
         /// <param name="height">Grid height</param>
         /// <param name="variations">Amount of tiles variations</param>
-        public GridManager(int width, int height, int variations, int randomSeed)
+        public GridService(GridSettings gridSettings, int width, int height, int variations, int randomSeed)
         {
+            GridSettings = gridSettings;
+
             GridWidth = width;
             GridHeight = height;
             _tilesVariations = variations;

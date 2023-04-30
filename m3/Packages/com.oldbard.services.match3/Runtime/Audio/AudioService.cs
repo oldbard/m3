@@ -1,9 +1,8 @@
-﻿using GameData;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Sounds
+namespace OldBard.Services.Match3.Audio
 {
-    public class SoundsManager : MonoBehaviour
+    public class AudioService : MonoBehaviour
     {
         [SerializeField] AudioSource _audioSource;
 
@@ -13,16 +12,16 @@ namespace Sounds
         AudioClip _matchClip;
         AudioClip _timeoutClip;
 
-        public void InitSound(Config config)
+        public void InitSound(AudioSettings settings)
         {
-            _audioSource.clip = config.GetBGM(Random.Range(0, config.TotalBGMs));
+            _audioSource.clip = settings.GetBGM(Random.Range(0, settings.TotalBGMs));
             _audioSource.Play();
 
-            _gameOverClip = config.GameOverSound;
-            _gameOverHighScoreClip = config.GameOverHighScoreSound;
-            _swapClip = config.SwapSound;
-            _matchClip = config.MatchSound;
-            _timeoutClip = config.TimeoutSound;
+            _gameOverClip = settings.GameOverSound;
+            _gameOverHighScoreClip = settings.GameOverHighScoreSound;
+            _swapClip = settings.SwapSound;
+            _matchClip = settings.MatchSound;
+            _timeoutClip = settings.TimeoutSound;
         }
 
         public void PlaySwapClip()
