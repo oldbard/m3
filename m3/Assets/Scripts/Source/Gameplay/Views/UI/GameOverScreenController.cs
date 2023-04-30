@@ -2,7 +2,7 @@
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace UI
+namespace OldBard.Match3.Gameplay.Views.UI
 {
     /// <summary>
     /// GameOverScreenController

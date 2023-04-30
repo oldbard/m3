@@ -1,12 +1,12 @@
-﻿using GameData;
-using Gameplay.Animations;
+﻿using OldBard.Match3.Config;
+using OldBard.Match3.Gameplay.Views.Animations;
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace UI
+namespace OldBard.Match3.Gameplay.Views.UI
 {
     /// <summary>
     /// GameUIController. Used to handle / update the in game ui
@@ -18,7 +18,7 @@ namespace UI
         [SerializeField] private Text _highScore;
         [SerializeField] GameOverScreenController _gameOverController;
 
-        Config _config;
+        GameConfig _config;
         AnimationsController _animationsController;
 
         public Action ShowHint;
@@ -26,7 +26,7 @@ namespace UI
 
         bool _blinkingTimer;
 
-        public void Init(Config config, AnimationsController animationsController)
+        public void Init(GameConfig config, AnimationsController animationsController)
         {
             _config = config;
             _animationsController = animationsController;

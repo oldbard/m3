@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using GameData;
-using Gameplay.Animations;
-using Shared;
-using UI;
+using OldBard.Match3.Config;
+using OldBard.Match3.Gameplay.Views.Animations;
+using OldBard.Services.Match3.Grid;
+using OldBard.Services.Match3.Grid.Views;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Gameplay.Views
+namespace OldBard.Match3.Gameplay.Views
 {
     /// <summary>
     /// GridViewController
@@ -37,8 +37,8 @@ namespace Gameplay.Views
         [SerializeField] SpriteRenderer _tilesBackground;
         [SerializeField] BoxCollider2D _tilesBackgroundCollider;
 
-        Config _config;
-        GridManager _gridManager;
+        GameConfig _gameConfig;
+        GridService _gridService;
         AnimationsController _animationsController;
         Camera _camera;
 
@@ -72,40 +72,40 @@ namespace Gameplay.Views
         /// <summary>
         /// Initializes the Grid View
         /// </summary>
-        /// <param name="config">The Game Config</param>
-        /// <param name="gridManager">The Grid Manager</param>
-        public void Initialize(Config config, GridManager gridManager, AnimationsController animationsController)
+        /// <param name="gameConfig">The Game Config</param>
+        /// <param name="gridService">The Grid Manager</param>
+        public void Initialize(GameConfig gameConfig, GridService gridService, AnimationsController animationsController)
         {
-            _config = config;
-            _gridManager = gridManager;
+            _gameConfig = gameConfig;
+            _gridService = gridService;
             _animationsController = animationsController;
             _camera = Camera.main;
             
             // Moves the camera and the board to the proper positions depending on the grid size
-            _camera.transform.position = new Vector3((_gridManager.GridWidth * 0.5f) - 4f,
-                _gridManager.GridHeight * 0.5f - 0.5f, 0f);
+            _camera.transform.position = new Vector3((_gridService.GridWidth * 0.5f) - 4f,
+                _gridService.GridHeight * 0.5f - 0.5f, 0f);
 
-            _boardFrame.localPosition = new Vector3(_gridManager.GridWidth * 0.5f - 0.5f,
-                _gridManager.GridHeight * 0.5f - 0.5f, 0f);
+            _boardFrame.localPosition = new Vector3(_gridService.GridWidth * 0.5f - 0.5f,
+                _gridService.GridHeight * 0.5f - 0.5f, 0f);
 
-            _tilesBackground.transform.localPosition = new Vector3(_gridManager.GridWidth * 0.5f - 0.5f,
-                _gridManager.GridHeight * 0.5f - 0.5f, 0f);
-            _tilesBackground.size = new Vector2(_gridManager.GridWidth, _gridManager.GridHeight);
+            _tilesBackground.transform.localPosition = new Vector3(_gridService.GridWidth * 0.5f - 0.5f,
+                _gridService.GridHeight * 0.5f - 0.5f, 0f);
+            _tilesBackground.size = new Vector2(_gridService.GridWidth, _gridService.GridHeight);
             _tilesBackgroundCollider.size = _tilesBackground.size;
 
             // Inits the containers
-            var maxTiles = _gridManager.GridWidth * _gridManager.GridHeight;
+            var maxTiles = _gridService.GridWidth * _gridService.GridHeight;
             _tiles = new HashSet<TileObjectView>();
             _tilesBeingAnimated = new List<TileObjectView>(maxTiles);
 
             // Inits the specific variation for this play through and the position from which
             // the tiles should come
-            _variation = Random.Range(0, _config.TilesVariations);
+            _variation = Random.Range(0, _gameConfig.TilesVariations);
 
-            _yCascadePositionOffset = _gridManager.GridHeight + 10;
+            _yCascadePositionOffset = _gridService.GridHeight + 10;
 
             // Creates the View Tiles
-            InitializeGridView(_gridManager.GridWidth, _gridManager.GridHeight);
+            InitializeGridView(_gridService.GridWidth, _gridService.GridHeight);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Gameplay.Views
                 for (var y = 0; y < height; y++)
                 {
                     // Creates the Tiles Views
-                    var tile = Instantiate(_config.TilePrefab, _tilesParent);
+                    var tile = Instantiate(_gameConfig.TilePrefab, _tilesParent);
 
                     var tileView = new TileObjectView
                     {
@@ -152,7 +152,7 @@ namespace Gameplay.Views
             _tiles.Clear();
             _tiles = null;
 
-            _gridManager = null;
+            _gridService = null;
         }
 
         #endregion
@@ -191,7 +191,7 @@ namespace Gameplay.Views
                     curTile.TileObject = tile;
 
                     // Gets and sets the tile based on the view data in the config
-                    var viewData = _config.GetViewData(tile.TileType, _variation);
+                    var viewData = _gameConfig.GetViewData(tile.TileType, _variation);
                     curTile.TileView.Init(tile, viewData);
 
                     // Enables the tile and tags it as spawned
@@ -267,8 +267,8 @@ namespace Gameplay.Views
             var worldPos = _camera.ScreenToWorldPoint(pos);
             
             // Calculates the column and row based on the given position and tiles sizes
-            var x = Mathf.RoundToInt(worldPos.x / _config.TileViewWidth);
-            var y = Mathf.RoundToInt(worldPos.y / _config.TileViewHeight);
+            var x = Mathf.RoundToInt(worldPos.x / _gridService.GridSettings.TileViewWidth);
+            var y = Mathf.RoundToInt(worldPos.y / _gridService.GridSettings.TileViewHeight);
             return this[x, y]?.TileObject;
         }
 
@@ -280,8 +280,8 @@ namespace Gameplay.Views
         Vector3 GetTilePos(TileObject tileObject)
         {
             return new Vector3(
-                tileObject.PosX * _config.TileViewWidth,
-                tileObject.PosY * _config.TileViewHeight,
+                tileObject.PosX * _gridService.GridSettings.TileViewWidth,
+                tileObject.PosY * _gridService.GridSettings.TileViewHeight,
                 TileZPos);
         }
 
@@ -295,8 +295,8 @@ namespace Gameplay.Views
         void SetTilePos(int x, int y, int z, GameObject tile)
         {
             tile.transform.localPosition = new Vector3(
-                x * _config.TileViewWidth,
-                y * _config.TileViewHeight,
+                x * _gridService.GridSettings.TileViewWidth,
+                y * _gridService.GridSettings.TileViewHeight,
                 z);
         }
 
@@ -322,7 +322,7 @@ namespace Gameplay.Views
 
                 if (tileView.TileView.NeedsRefresh)
                 {
-                    var viewData = _config.GetViewData(tile.TileType, _variation);
+                    var viewData = _gameConfig.GetViewData(tile.TileType, _variation);
                     tileView.TileView.Init(tile, viewData);
                 }
 
@@ -346,9 +346,9 @@ namespace Gameplay.Views
         {
             var sb = new System.Text.StringBuilder();
 
-            for (var y = 0; y < _gridManager.GridHeight; y++)
+            for (var y = 0; y < _gridService.GridHeight; y++)
             {
-                for (var x = 0; x < _gridManager.GridWidth; x++)
+                for (var x = 0; x < _gridService.GridWidth; x++)
                 {
                     sb.Append(this[x, y].TileView.AppliedTileType + ", ");
                 }
@@ -370,7 +370,7 @@ namespace Gameplay.Views
         {
             var viewTiles = GetViewTiles(tilesToUpdate, true);
             await _animationsController.PlayTilesPositionAnim(viewTiles,
-                _config.DropAnimationTime);
+                _gameConfig.DropAnimationTime);
 
             // Tags the view tile as spawned
             for (var i = 0; i < viewTiles.Count; i++)
@@ -404,7 +404,7 @@ namespace Gameplay.Views
             _tilesBeingAnimated.Add(tileView1);
             _tilesBeingAnimated.Add(tileView2);
 
-            await _animationsController.PlayTilesPositionAnim(_tilesBeingAnimated, _config.SwapAnimationTime);
+            await _animationsController.PlayTilesPositionAnim(_tilesBeingAnimated, _gameConfig.SwapAnimationTime);
         }
 
         /// <summary>
@@ -414,7 +414,7 @@ namespace Gameplay.Views
         public async Task PlayHideTilesAnim(List<TileObject> tilesMatched)
         {
             var tiles = GetViewTiles(tilesMatched);
-            await _animationsController.PlayTilesScaleAnim(tiles, _config.SwapAnimationTime);
+            await _animationsController.PlayTilesScaleAnim(tiles, _gameConfig.SwapAnimationTime);
 
             // Despawn the specific tile
             for (var i = 0; i < tiles.Count; i++)
@@ -433,7 +433,7 @@ namespace Gameplay.Views
             var tiles = GetViewTiles(tilesMatched);
 
             // We animate it as many times as it is configured
-            for (int j = 0; j < _config.HintCycles; j++)
+            for (int j = 0; j < _gameConfig.HintCycles; j++)
             {
                 // Enables the highlight sprite and sets it's alpha to 0
                 for (var i = 0; i < tiles.Count; i++)
@@ -445,11 +445,11 @@ namespace Gameplay.Views
 
                 // Shows background
                 await _animationsController.PlayTilesBackgroundAlphaAnim(tiles,
-                    _config.HintAnimationTime * 0.5f, true);
+                    _gameConfig.HintAnimationTime * 0.5f, true);
 
                 // Hides background
                 await _animationsController.PlayTilesBackgroundAlphaAnim(tiles,
-                    _config.HintAnimationTime * 0.5f, false);
+                    _gameConfig.HintAnimationTime * 0.5f, false);
             }
 
             // Disables the high lighting
@@ -471,8 +471,8 @@ namespace Gameplay.Views
         Vector3 CascadeInitialPosition(TileObject tileObject)
         {
             return new Vector3(
-                tileObject.PosX * _config.TileViewWidth,
-                (tileObject.PosY + _yCascadePositionOffset) * _config.TileViewHeight,
+                tileObject.PosX * _gridService.GridSettings.TileViewWidth,
+                (tileObject.PosY + _yCascadePositionOffset) * _gridService.GridSettings.TileViewHeight,
                 TileZPos);
         }
 

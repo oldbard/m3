@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Gameplay.Controllers
+namespace OldBard.Match3.Gameplay.Controllers
 {
     public class InputManager : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler
     {

@@ -1,11 +1,10 @@
-﻿using Gameplay.Views;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Gameplay.Animations
+namespace OldBard.Match3.Gameplay.Views.Animations
 {
     public class AnimationsController
     {

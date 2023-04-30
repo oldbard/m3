@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using GameData;
-using Gameplay.Animations;
-using Gameplay.Views;
-using Shared;
-using Sounds;
-using UI;
+using OldBard.Match3.Config;
+using OldBard.Match3.Gameplay.Views;
+using OldBard.Match3.Gameplay.Views.Animations;
+using OldBard.Match3.Gameplay.Views.UI;
+using OldBard.Services.Match3.Audio;
+using OldBard.Services.Match3.Grid;
 using UnityEngine;
 
-namespace Gameplay.Controllers
+namespace OldBard.Match3.Gameplay.Controllers
 {
     /// <summary>
     /// GameController. Controls the initialization, flow, and conditions of the match
@@ -24,13 +24,15 @@ namespace Gameplay.Controllers
         const string TilesVariationsKey = "TilesVariations";
         const string MatchDurationKey = "MatchDuration";
 
-        [SerializeField] Config _config;
+        [SerializeField] GameConfig _gameConfig;
+        [SerializeField] GridSettings _gridSettings;
         [SerializeField] GridViewController _gridView;
         [SerializeField] GameUIController _gameUIController;
         [SerializeField] InputManager _inputManager;
-        [SerializeField] SoundsManager _soundsManager;
+        [SerializeField] Services.Match3.Audio.AudioSettings _audioSettings;
+        [SerializeField] AudioService _audioService;
 
-        GridManager _gridManager;
+        GridService _gridService;
         AnimationsController _animationsController;
 
         CancellationTokenSource _timerLoopTokenSource;
@@ -99,8 +101,8 @@ namespace Gameplay.Controllers
 
             UnregisterEvents();
 
-            _gridManager.Dispose();
-            _gridManager = null;
+            _gridService.Dispose();
+            _gridService = null;
         }
 
         /// <summary>
@@ -110,9 +112,9 @@ namespace Gameplay.Controllers
         {
             _inputManager.DisableInput();
 
-            var duration = PlayerPrefs.GetInt(MatchDurationKey, _config.GameDuration);
+            var duration = PlayerPrefs.GetInt(MatchDurationKey, _gameConfig.GameDuration);
 
-            _animationsController = new AnimationsController(_config.LerpAnimationCurve);
+            _animationsController = new AnimationsController(_gameConfig.LerpAnimationCurve);
 
             InitHUD();
 
@@ -138,8 +140,8 @@ namespace Gameplay.Controllers
         {
             _gameUIController.UpdateScore(0);
 
-            _gameUIController.Init(_config, _animationsController);
-            _soundsManager.InitSound(_config);
+            _gameUIController.Init(_gameConfig, _animationsController);
+            _audioService.InitSound(_audioSettings);
 
             var highScore = PlayerPrefs.GetInt(HighScoreKey, 0);
             _gameUIController.UpdateHighScore(highScore);
@@ -152,16 +154,16 @@ namespace Gameplay.Controllers
         {
             // Gets the configuration. Loads the data from the PlayerPrefs. Uses the
             // information in the config as default.
-            var width = PlayerPrefs.GetInt(GridWidthKey, _config.DefaultGridWidth);
-            var height = PlayerPrefs.GetInt(GridHeightKey, _config.DefaultGridHeight);
-            var variations = PlayerPrefs.GetInt(TilesVariationsKey, _config.NumberOfTileTypes);
+            var width = PlayerPrefs.GetInt(GridWidthKey, _gridSettings.DefaultGridWidth);
+            var height = PlayerPrefs.GetInt(GridHeightKey, _gridSettings.DefaultGridHeight);
+            var variations = PlayerPrefs.GetInt(TilesVariationsKey, _gameConfig.NumberOfTileTypes);
             
-            _gridManager = new GridManager(width, height, variations, System.DateTime.UtcNow.Millisecond);
+            _gridService = new GridService(_gridSettings, width, height, variations, System.DateTime.UtcNow.Millisecond);
 
-            _gridView.Initialize(_config, _gridManager, _animationsController);
+            _gridView.Initialize(_gameConfig, _gridService, _animationsController);
             
             // Gets the tiles data created by the GridManager and sends it to be shown in the view
-            var tiles = _gridManager.ShuffleGrid();
+            var tiles = _gridService.ShuffleGrid();
             await _gridView.PlayTilesDropAnim(tiles);
         }
 
@@ -172,7 +174,7 @@ namespace Gameplay.Controllers
         {
             _gameUIController.ShowHint += OnShowHint;
             _inputManager.Dragged += OnDragged;
-            _gameUIController.TimeOut += _soundsManager.PlayTimeoutClip;
+            _gameUIController.TimeOut += _audioService.PlayTimeoutClip;
         }
 
         /// <summary>
@@ -182,7 +184,7 @@ namespace Gameplay.Controllers
         {
             _gameUIController.ShowHint -= OnShowHint;
             _inputManager.Dragged -= OnDragged;
-            _gameUIController.TimeOut -= _soundsManager.PlayTimeoutClip;
+            _gameUIController.TimeOut -= _audioService.PlayTimeoutClip;
         }
 
         #endregion
@@ -214,7 +216,7 @@ namespace Gameplay.Controllers
 
                 // Checks if the game is running, if the player can interact and if a
                 // given amount of time has passed. If so, shows a hint to the player
-                if (_inputManager.CanDrag && _inputManager.TimeSinceLastInteraction > _config.TimeToShowHint)
+                if (_inputManager.CanDrag && _inputManager.TimeSinceLastInteraction > _gameConfig.TimeToShowHint)
                 {
                     OnShowHint();
                     _inputManager.ResetLastInteraction();
@@ -247,7 +249,7 @@ namespace Gameplay.Controllers
 
             // Shows the Game Over popup
             _gameUIController.ShowGameOver(Score, isHighScore);
-            _soundsManager.PlayGameOver(isHighScore);
+            _audioService.PlayGameOver(isHighScore);
         }
 
         #endregion
@@ -266,7 +268,7 @@ namespace Gameplay.Controllers
             var diff = curPos - initialDragPos;
 
             // If the player dragged enough, process the input
-            if(diff.sqrMagnitude >= _config.DragDetectionThreshold * _config.DragDetectionThreshold)
+            if(diff.sqrMagnitude >= _gameConfig.DragDetectionThreshold * _gameConfig.DragDetectionThreshold)
             {
                 // Gets the tile that is being dragged
                 var pickedTile = _gridView.GetTileAt(initialDragPos);
@@ -276,7 +278,7 @@ namespace Gameplay.Controllers
 
                 // Gets the neighbour tile based on the direction of the drag
                 var dir = GetDirection(diff.normalized);
-                var neighbour = _gridManager.GetNeighbourTile(pickedTile, dir);
+                var neighbour = _gridService.GetNeighbourTile(pickedTile, dir);
 
                 // Dragged in a bad direction
                 if(neighbour == null) return;
@@ -297,13 +299,13 @@ namespace Gameplay.Controllers
         async void DoSwapAnims(TileObject tile1, TileObject tile2)
         {
             // Plays an audio specific to the swapping
-            _soundsManager.PlaySwapClip();
+            _audioService.PlaySwapClip();
             
             // Plays the swap animation and waits for it to end
             await _gridView.PlaySwapAnim(tile1, tile2);
 
             // Tries to swap the tiles in the logic and get the affected tiles (matches)
-            var tiles = _gridManager.TrySwapTiles(tile1, tile2);
+            var tiles = _gridService.TrySwapTiles(tile1, tile2);
 
             var success = tiles.Count > 0;
             
@@ -334,24 +336,24 @@ namespace Gameplay.Controllers
             while(tiles.Count > 0)
             {
                 // Calculates the player score
-                Score += tiles.Count * _config.PointsPerTile;
+                Score += tiles.Count * _gameConfig.PointsPerTile;
 
                 // Play a sound for the match and destruction
-                _soundsManager.PlayMatchClip();
+                _audioService.PlayMatchClip();
                 
                 // Waits for the matched tiles destruction animation to end.
                 await _gridView.PlayHideTilesAnim(tiles);
 
                 // Moves the tiles down. Gets a list of all the involved tiles from the manager
-                var animatedTiles = _gridManager.MoveTilesDown();
+                var animatedTiles = _gridService.MoveTilesDown();
 
                 // Shows in the view the movement of the tiles and placement of new ones
                 await _gridView.PlayTilesDropAnim(animatedTiles);
 
                 // Checks if we have more tiles to process because of the cascading
-                tiles = _gridManager.FindAndProcessMatches();
+                tiles = _gridService.FindAndProcessMatches();
             }
-            var gmDebug = _gridManager.DebugGrid();
+            var gmDebug = _gridService.DebugGrid();
             var gvDebug = _gridView.DebugGrid();
 
             if (!gmDebug.Equals(gvDebug))
@@ -367,8 +369,8 @@ namespace Gameplay.Controllers
         void OnShowHint()
         {
             // Gets a list of the first possible match and shows it to the player
-            var list = _gridManager.GetFirstPossibleMatch();
-            _gridView.PlayHintAnim(list);
+            var list = _gridService.GetFirstPossibleMatch();
+            _ = _gridView.PlayHintAnim(list);
         }
 
         #endregion
@@ -380,15 +382,15 @@ namespace Gameplay.Controllers
         /// </summary>
         /// <param name="dir">The direction of the drag vector</param>
         /// <returns>The DragDirection from the Vector</returns>
-        GridManager.DragDirection GetDirection(Vector3 dir)
+        GridService.DragDirection GetDirection(Vector3 dir)
         {
             // Moved left or right
             if(Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
             {
-                return dir.x > 0 ? GridManager.DragDirection.Right : GridManager.DragDirection.Left;
+                return dir.x > 0 ? GridService.DragDirection.Right : GridService.DragDirection.Left;
             }
 
-            return dir.y > 0 ? GridManager.DragDirection.Down : GridManager.DragDirection.Up;
+            return dir.y > 0 ? GridService.DragDirection.Down : GridService.DragDirection.Up;
         }
 
         #endregion

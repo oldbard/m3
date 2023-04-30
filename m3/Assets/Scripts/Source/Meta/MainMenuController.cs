@@ -1,10 +1,12 @@
-﻿using System;
-using GameData;
+﻿using OldBard.Match3.Config;
+using OldBard.Services.Match3.Grid;
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace UI
+namespace OldBard.Match3.Meta
 {
     /// <summary>
     /// MainMenuController
@@ -17,29 +19,30 @@ namespace UI
         const string MatchDurationKey = "MatchDuration";
         const string HighScoreKey = "HighScore";
 
-        [SerializeField] Config _config;
+        [SerializeField] GameConfig _gameConfig;
+        [SerializeField] GridSettings _gridSettings;
         
         [SerializeField] Slider _widthSlider;
         [SerializeField] Slider _heightSlider;
         [SerializeField] Slider _variationsSlider;
         [SerializeField] Slider _durationSlider;
-        [SerializeField] Text _widthText;
-        [SerializeField] Text _heightText;
-        [SerializeField] Text _variationsText;
-        [SerializeField] Text _durationText;
-        [SerializeField] Text _highScoreText;
+        [SerializeField] TextMeshProUGUI _widthText;
+        [SerializeField] TextMeshProUGUI _heightText;
+        [SerializeField] TextMeshProUGUI _variationsText;
+        [SerializeField] TextMeshProUGUI _durationText;
+        [SerializeField] TextMeshProUGUI _highScoreText;
 
         [SerializeField] AudioSource _backgroundMusic;
         
         void Awake()
         {
-            _widthSlider.value = PlayerPrefs.GetInt(GridWidthKey, _config.DefaultGridWidth);
+            _widthSlider.value = PlayerPrefs.GetInt(GridWidthKey, _gridSettings.DefaultGridWidth);
             OnChangeWidth(_widthSlider.value);
-            _heightSlider.value = PlayerPrefs.GetInt(GridHeightKey, _config.DefaultGridHeight);
+            _heightSlider.value = PlayerPrefs.GetInt(GridHeightKey, _gridSettings.DefaultGridHeight);
             OnChangeHeight(_heightSlider.value);
-            _variationsSlider.value = PlayerPrefs.GetInt(TilesVariationsKey, _config.NumberOfTileTypes);
+            _variationsSlider.value = PlayerPrefs.GetInt(TilesVariationsKey, _gameConfig.NumberOfTileTypes);
             OnChangeVariations(_variationsSlider.value);
-            _durationSlider.value = PlayerPrefs.GetInt(MatchDurationKey, _config.GameDuration);
+            _durationSlider.value = PlayerPrefs.GetInt(MatchDurationKey, _gameConfig.GameDuration);
             OnChangeDuration(_durationSlider.value);
             
             _highScoreText.text = $"High Score: {PlayerPrefs.GetInt(HighScoreKey, 0)}";
