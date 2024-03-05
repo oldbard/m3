@@ -10,6 +10,6 @@
         Orange,
         Red,
         Yellow,
-        Count
+        None
     }
 }
