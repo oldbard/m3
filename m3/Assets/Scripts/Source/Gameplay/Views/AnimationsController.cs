@@ -23,7 +23,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// </summary>
         /// <param name="tiles">List of Tiles to animate</param>
         /// <param name="totalTime">Duration of the animation</param>
-        public async Task PlayTilesPositionAnim(List<GridViewController.TileInstance> tiles, float totalTime)
+        public async Task PlayTilesPositionAnim(List<TileInstance> tiles, float totalTime)
         {
             await PlayTilesAnim(tiles, AnimateTilePosition, totalTime);
         }
@@ -33,7 +33,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// </summary>
         /// <param name="tiles">List of Tiles to animate</param>
         /// <param name="totalTime">Duration of the animation</param>
-        public async Task PlayTilesScaleAnim(List<GridViewController.TileInstance> tiles, float totalTime)
+        public async Task PlayTilesScaleAnim(List<TileInstance> tiles, float totalTime)
         {
             await PlayTilesAnim(tiles, AnimateTileScale, totalTime);
         }
@@ -44,7 +44,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// <param name="tiles">List of Tiles to animate</param>
         /// <param name="totalTime">Duration of the animation</param>
         /// <param name="showing">Whether the tile is being shown or hidden</param>
-        public async Task PlayTilesBackgroundAlphaAnim(List<GridViewController.TileInstance> tiles,
+        public async Task PlayTilesBackgroundAlphaAnim(List<TileInstance> tiles,
             float totalTime, bool showing)
         {
             if(showing)
@@ -67,13 +67,13 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// <param name="tiles">List of Tiles to animate</param>
         /// <param name="animationCall">Action to call at every frame</param>
         /// <param name="totalTime">Duration of the animation</param>
-        async Task PlayTilesAnim(List<GridViewController.TileInstance> tiles,
-            Action<GridViewController.TileInstance, float, float> animationCall,
+        async Task PlayTilesAnim(List<TileInstance> tiles,
+            Action<TileInstance, float, float> animationCall,
             float totalTime)
         {
             await PlayAnim((elapsedTime) =>
                 {
-                    foreach(GridViewController.TileInstance tile in tiles)
+                    foreach(TileInstance tile in tiles)
                     {
                         animationCall(tile, elapsedTime, totalTime);
                     }
@@ -128,7 +128,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// <param name="tile">Tile to animate</param>
         /// <param name="elapsedTime">Current elapsed time</param>
         /// <param name="totalTime">Duration of the animation</param>
-        void AnimateTilePosition(GridViewController.TileInstance tile,
+        void AnimateTilePosition(TileInstance tile,
             float elapsedTime, float totalTime)
         {
             tile.TileView.Position =
@@ -144,7 +144,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// <param name="tile">Tile to animate</param>
         /// <param name="elapsedTime">Current elapsed time</param>
         /// <param name="totalTime">Duration of the animation</param>
-        void AnimateTileScale(GridViewController.TileInstance tile,
+        void AnimateTileScale(TileInstance tile,
             float elapsedTime, float totalTime)
         {
             // Makes them bigger first to give a better feedback
@@ -164,7 +164,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// <param name="tile">Tile to animate</param>
         /// <param name="elapsedTime">Current elapsed time</param>
         /// <param name="totalTime">Duration of the animation</param>
-        void AnimateTileBackgroundAlphaShow(GridViewController.TileInstance tile,
+        void AnimateTileBackgroundAlphaShow(TileInstance tile,
             float elapsedTime, float totalTime)
         {
             AnimateTileBackgroundAlpha(tile, elapsedTime, totalTime, 0f, 1f);
@@ -176,7 +176,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// <param name="tile">Tile to animate</param>
         /// <param name="elapsedTime">Current elapsed time</param>
         /// <param name="totalTime">Duration of the animation</param>
-        void AnimateTileBackgroundAlphaHide(GridViewController.TileInstance tile,
+        void AnimateTileBackgroundAlphaHide(TileInstance tile,
             float elapsedTime, float totalTime)
         {
             AnimateTileBackgroundAlpha(tile, elapsedTime, totalTime, 1f, 0f);
@@ -190,7 +190,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// <param name="totalTime">Duration of the animation</param>
         /// <param name="initialAlpha">Initial Alpha</param>
         /// <param name="endAlpha">End Alpha</param>
-        void AnimateTileBackgroundAlpha(GridViewController.TileInstance tile,
+        void AnimateTileBackgroundAlpha(TileInstance tile,
             float elapsedTime, float totalTime, float initialAlpha, float endAlpha)
         {
             tile.TileView.SetSelectedBackgroundAlpha(

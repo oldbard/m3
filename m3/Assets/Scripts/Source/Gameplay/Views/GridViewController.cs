@@ -20,13 +20,6 @@ namespace OldBard.Match3.Gameplay.Views
 
         const int TILE_Z_POS = -2;
 
-        public class TileInstance
-        {
-            public TileView TileView;
-            public TileObject TileObject;
-            public bool Spawned;
-        }
-
         [SerializeField] Transform _tilesParent;
         [SerializeField] SpriteRenderer _tilesBackground;
         [SerializeField] BoxCollider2D _tilesBackgroundCollider;
