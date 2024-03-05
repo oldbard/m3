@@ -90,16 +90,16 @@ namespace OldBard.Match3.Gameplay.Views
             {
                 for (var y = 0; y < height; y++)
                 {
-                    // Creates the Tiles Views
+                    // Creates the Tile View
                     TileView tile = Instantiate(_gameConfig.TilePrefab, _tilesParent);
 
-                    var tileView = new TileInstance
+                    var tileInstance = new TileInstance
                     {
                         TileView = tile,
                         TileObject = null,
                         Spawned = false
                     };
-                    _tiles.Add(tileView);
+                    _tiles.Add(tileInstance);
                 }
             }
         }
