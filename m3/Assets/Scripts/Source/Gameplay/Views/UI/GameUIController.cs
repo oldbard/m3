@@ -2,9 +2,9 @@
 using OldBard.Match3.Gameplay.Views.Animations;
 using System;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace OldBard.Match3.Gameplay.Views.UI
 {
@@ -13,9 +13,9 @@ namespace OldBard.Match3.Gameplay.Views.UI
     /// </summary>
     public class GameUIController : MonoBehaviour
     {
-        [SerializeField] Text _timer;
-        [SerializeField] Text _score;
-        [SerializeField] Text _highScore;
+        [SerializeField] TextMeshProUGUI _timer;
+        [SerializeField] TextMeshProUGUI _score;
+        [SerializeField] TextMeshProUGUI _highScore;
         [SerializeField] GameOverScreenController _gameOverController;
 
         GameConfig _config;
@@ -24,7 +24,7 @@ namespace OldBard.Match3.Gameplay.Views.UI
         public Action ShowHint;
         public Action TimeOut;
 
-        bool _blinkingTimer;
+        bool _timerIsBlinking;
 
         public void Init(GameConfig config, AnimationsController animationsController)
         {
@@ -35,13 +35,15 @@ namespace OldBard.Match3.Gameplay.Views.UI
         public void UpdateTimer(int timeLeft)
         {
             TimeSpan timeSpan = TimeSpan.FromSeconds(timeLeft);
-            _timer.text = $"Time Left: {timeSpan:mm':'ss}";
+            _timer.SetText("Time Left: {0:00}:{1:00}", timeSpan.Minutes, timeSpan.Seconds);
 
-            if(!_blinkingTimer && timeLeft <= _config.TimeToShowWarning + 1)
+            if(_timerIsBlinking || timeLeft > _config.TimeToShowWarning + 1)
             {
-                _blinkingTimer = true;
-                ShowBlinkingTimer();
+                return;
             }
+
+            _timerIsBlinking = true;
+            ShowBlinkingTimer();
         }
 
         async void ShowBlinkingTimer()
@@ -69,12 +71,12 @@ namespace OldBard.Match3.Gameplay.Views.UI
 
         public void UpdateScore(int score)
         {
-            _score.text = $"Score: {score.ToString()}";
+            _score.SetText("Score: {0}", score);
         }
 
         public void UpdateHighScore(int score)
         {
-            _highScore.text = $"High Score: {score.ToString()}";
+            _highScore.SetText("High Score: {0}", score);
         }
 
         public void ShowGameOver(int score, bool highScore)

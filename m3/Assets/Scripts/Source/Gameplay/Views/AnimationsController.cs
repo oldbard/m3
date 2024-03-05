@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace OldBard.Match3.Gameplay.Views.Animations
 {
@@ -88,7 +88,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// <param name="initColor">Initial Color</param>
         /// <param name="endColor">End Color</param>
         /// <param name="totalTime">Duration of the animation</param>
-        public async Task PlayTextColorAnim(Text text, Color initColor, Color endColor, float totalTime)
+        public async Task PlayTextColorAnim(TextMeshProUGUI text, Color initColor, Color endColor, float totalTime)
         {
             await PlayAnim((elapsedTime) =>
             {
