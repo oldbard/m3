@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using OldBard.Match3.Config;
 using OldBard.Match3.Gameplay.Views.Animations;
 using OldBard.Services.Match3.Grid;
+using OldBard.Services.Match3.Grid.Data;
 using OldBard.Services.Match3.Grid.Views;
 using UnityEngine;
+using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
 namespace OldBard.Match3.Gameplay.Views
@@ -34,12 +36,11 @@ namespace OldBard.Match3.Gameplay.Views
         AnimationsController _animationsController;
         Camera _camera;
 
+        Vector3 _gridOffset;
+
         /// <summary>
         /// A HashSet with all the tiles in the view
         /// </summary>
-        
-        // A list used as cache for the required iterations 
-        List<TileObjectView> _tilesBeingAnimated;
         HashSet<TileInstance> _tiles = new();
 
         int _variation;
@@ -69,23 +70,11 @@ namespace OldBard.Match3.Gameplay.Views
             _gridService = gridService;
             _animationsController = animationsController;
             _camera = Camera.main;
+
+            _gridOffset = new Vector3(-((_gridService.GridWidth - 1) * 0.5f), -((_gridService.GridHeight - 1) * 0.5f), 0f);
             
-            // Moves the camera and the board to the proper positions depending on the grid size
-            _camera.transform.position = new Vector3((_gridService.GridWidth * 0.5f) - 4f,
-                _gridService.GridHeight * 0.5f - 0.5f, 0f);
-
-            _boardFrame.localPosition = new Vector3(_gridService.GridWidth * 0.5f - 0.5f,
-                _gridService.GridHeight * 0.5f - 0.5f, 0f);
-
-            _tilesBackground.transform.localPosition = new Vector3(_gridService.GridWidth * 0.5f - 0.5f,
-                _gridService.GridHeight * 0.5f - 0.5f, 0f);
             _tilesBackground.size = new Vector2(_gridService.GridWidth, _gridService.GridHeight);
             _tilesBackgroundCollider.size = _tilesBackground.size;
-
-            // Inits the containers
-            var maxTiles = _gridService.GridWidth * _gridService.GridHeight;
-            _tiles = new HashSet<TileObjectView>();
-            _tilesBeingAnimated = new List<TileObjectView>(maxTiles);
 
             // Inits the specific variation for this play through and the position from which
             // the tiles should come
@@ -127,9 +116,6 @@ namespace OldBard.Match3.Gameplay.Views
         /// </summary>
         void OnDestroy()
         {
-            _tilesBeingAnimated.Clear();
-            _tilesBeingAnimated = null;
-
             foreach(TileInstance tile in _tiles)
             {
                 if (tile != null)
@@ -267,10 +253,14 @@ namespace OldBard.Match3.Gameplay.Views
         /// <returns>The World Position of the TileObject</returns>
         Vector3 GetTilePos(TileObject tileObject)
         {
-            return new Vector3(
+            var pos = new Vector3(
                 tileObject.PosX * _gridService.GridSettings.TileViewWidth,
                 tileObject.PosY * _gridService.GridSettings.TileViewHeight,
-                TileZPos);
+                TILE_Z_POS);
+
+            pos += _gridOffset;
+
+            return pos;
         }
 
         /// <summary>
@@ -282,10 +272,13 @@ namespace OldBard.Match3.Gameplay.Views
         /// <param name="tile">The GameObject to be placed</param>
         void SetTilePos(int x, int y, int z, GameObject tile)
         {
-            tile.transform.localPosition = new Vector3(
+             var localPosition = new Vector3(
                 x * _gridService.GridSettings.TileViewWidth,
                 y * _gridService.GridSettings.TileViewHeight,
                 z);
+            
+            localPosition += _gridOffset;
+            tile.transform.localPosition = localPosition;
         }
 
         /// <summary>
@@ -296,8 +289,6 @@ namespace OldBard.Match3.Gameplay.Views
         /// <param name="setPositions"></param>
         void GetViewTiles(List<TileObject> tiles, List<TileInstance> tilesBeingAnimated, bool setPositions = false)
         {
-            _tilesBeingAnimated.Clear();
-
             foreach(TileObject tile in tiles)
             {
                 // If we don't have a view set for the specific tile. We create it. 
@@ -345,14 +336,16 @@ namespace OldBard.Match3.Gameplay.Views
         /// <param name="tilesToUpdate">List of Tiles to animate</param>
         public async Task PlayTilesDropAnim(List<TileObject> tilesToUpdate)
         {
-            var viewTiles = GetViewTiles(tilesToUpdate, true);
-            await _animationsController.PlayTilesPositionAnim(viewTiles,
-                _gameConfig.DropAnimationTime);
-
-            // Tags the view tile as spawned
-            for (var i = 0; i < viewTiles.Count; i++)
+            using(ListPool<TileInstance>.Get(out List<TileInstance> viewTiles))
             {
-                viewTiles[i].Spawned = true;
+                GetViewTiles(tilesToUpdate, viewTiles, true);
+                await _animationsController.PlayTilesPositionAnim(viewTiles, _gameConfig.DropAnimationTime);
+
+                // Tags the view tile as spawned
+                foreach(TileInstance tile in viewTiles)
+                {
+                    tile.Spawned = true;
+                }
             }
         }
 
@@ -364,9 +357,6 @@ namespace OldBard.Match3.Gameplay.Views
         /// <returns></returns>
         public async Task PlaySwapAnim(TileObject tile1, TileObject tile2)
         {
-            // Gets the view information about the tiles
-            _tilesBeingAnimated.Clear();
-
             // Gets the tile views and positions information
             TileInstance tileView1 = GetTileAt(tile1);
             TileInstance tileView2 = GetTileAt(tile2);
@@ -378,10 +368,13 @@ namespace OldBard.Match3.Gameplay.Views
             tileView1.TileView.DoBlink();
             tileView2.TileView.DoBlink();
 
-            _tilesBeingAnimated.Add(tileView1);
-            _tilesBeingAnimated.Add(tileView2);
-
-            await _animationsController.PlayTilesPositionAnim(_tilesBeingAnimated, _gameConfig.SwapAnimationTime);
+            using(ListPool<TileInstance>.Get(out List<TileInstance> tiles))
+            {
+                tiles.Add(tileView1);
+                tiles.Add(tileView2);
+            
+                await _animationsController.PlayTilesPositionAnim(tiles, _gameConfig.SwapAnimationTime);
+            }
         }
 
         /// <summary>
@@ -390,13 +383,16 @@ namespace OldBard.Match3.Gameplay.Views
         /// <param name="tilesMatched">List of Tiles to animate</param>
         public async Task PlayHideTilesAnim(List<TileObject> tilesMatched)
         {
-            var tiles = GetViewTiles(tilesMatched);
-            await _animationsController.PlayTilesScaleAnim(tiles, _gameConfig.SwapAnimationTime);
-
-            // Despawn the specific tile
-            for (var i = 0; i < tiles.Count; i++)
+            using(ListPool<TileInstance>.Get(out List<TileInstance> tiles))
             {
-                DeSpawnTile(tiles[i]);
+                GetViewTiles(tilesMatched, tiles);
+                await _animationsController.PlayTilesScaleAnim(tiles, _gameConfig.SwapAnimationTime);
+
+                // Despawn the specific tile
+                foreach(TileInstance tile in tiles)
+                {
+                    DeSpawnTile(tile);
+                }
             }
         }
 
@@ -405,33 +401,44 @@ namespace OldBard.Match3.Gameplay.Views
         /// </summary>
         public async Task PlayHintAnim()
         {
-            // Gets the view information about the tiles
-            var tiles = GetViewTiles(tilesMatched);
+            ListPool<TileObject>.Get(out List<TileObject> tilesMatched);
 
-            // We animate it as many times as it is configured
-            for (int j = 0; j < _gameConfig.HintCycles; j++)
+            if(!_gridService.GetFirstPossibleMatch(tilesMatched))
             {
-                // Enables the highlight sprite and sets it's alpha to 0
-                for (var i = 0; i < tiles.Count; i++)
-                {
-                    var tile = tiles[i].TileView;
-                    tile.SetSelectedBackgroundAlpha(0f);
-                    tile.HighlightTile();
-                }
-
-                // Shows background
-                await _animationsController.PlayTilesBackgroundAlphaAnim(tiles,
-                    _gameConfig.HintAnimationTime * 0.5f, true);
-
-                // Hides background
-                await _animationsController.PlayTilesBackgroundAlphaAnim(tiles,
-                    _gameConfig.HintAnimationTime * 0.5f, false);
+                ListPool<TileObject>.Release(tilesMatched);
+                return;
             }
 
-            // Disables the high lighting
-            for (var i = 0; i < tiles.Count; i++)
+            using(ListPool<TileInstance>.Get(out List<TileInstance> tiles))
             {
-                tiles[i].TileView.DehighlightTile();
+                // Gets the view information about the tiles
+                GetViewTiles(tilesMatched, tiles);
+                
+                ListPool<TileObject>.Release(tilesMatched);
+
+                // We animate it as many times as it is configured
+                for(int j = 0; j < _gameConfig.HintCycles; j++)
+                {
+                    // Enables the highlight sprite and sets it's alpha to 0
+                    foreach(TileInstance tile in tiles)
+                    {
+                        TileView tileView = tile.TileView;
+                        tileView.SetSelectedBackgroundAlpha(0f);
+                        tileView.HighlightTile();
+                    }
+
+                    // Shows background
+                    await _animationsController.PlayTilesBackgroundAlphaAnim(tiles, _gameConfig.HintAnimationTime * 0.5f, true);
+
+                    // Hides background
+                    await _animationsController.PlayTilesBackgroundAlphaAnim(tiles, _gameConfig.HintAnimationTime * 0.5f, false);
+                }
+
+                // Disables the high lighting
+                foreach(TileInstance tile in tiles)
+                {
+                    tile.TileView.DisableTileHighlight();
+                }
             }
         }
 

@@ -366,8 +366,7 @@ namespace OldBard.Match3.Gameplay.Controllers
         void OnShowHint()
         {
             // Gets a list of the first possible match and shows it to the player
-            var list = _gridService.GetFirstPossibleMatch();
-            _ = _gridView.PlayHintAnim(list);
+            _ = _gridView.PlayHintAnim();
         }
 
         /// Utils
