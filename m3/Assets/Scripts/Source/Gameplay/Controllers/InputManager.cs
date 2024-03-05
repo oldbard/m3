@@ -18,18 +18,12 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// <summary>
         /// Returns true if the player is allowed to interact with the board
         /// </summary>
-        public bool CanDrag
-        {
-            get => !_lockInput;
-        }
+        public bool CanDrag => !_lockInput;
 
         /// <summary>
-        /// Returns the amount of seconds elapased since the last interaction
+        /// Returns the amount of seconds elapsed since the last interaction
         /// </summary>
-        public double TimeSinceLastInteraction
-        {
-            get => (DateTime.UtcNow - _lastInteractionTime).TotalSeconds;
-        }
+        public double TimeSinceLastInteraction => (DateTime.UtcNow - _lastInteractionTime).TotalSeconds;
 
         /// <summary>
         /// Allow the player to interact with the board
@@ -63,7 +57,10 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// <param name="eventData"></param>
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (!CanDrag) return;
+            if(!CanDrag)
+            {
+                return;
+            }
 
             _lastInteractionTime = DateTime.UtcNow;
 
@@ -88,9 +85,12 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// <param name="eventData"></param>
         public void OnDrag(PointerEventData eventData)
         {
-            var curPos = Input.mousePosition;
+            Vector3 curPos = Input.mousePosition;
 
-            if (!_isDragging || curPos == _initialDragPos || !CanDrag) return;
+            if(!_isDragging || curPos == _initialDragPos || !CanDrag)
+            {
+                return;
+            }
 
             Dragged?.Invoke(curPos, _initialDragPos);
         }

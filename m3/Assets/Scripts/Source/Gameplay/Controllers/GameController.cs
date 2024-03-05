@@ -16,13 +16,13 @@ namespace OldBard.Match3.Gameplay.Controllers
     /// </summary>
     public class GameController : MonoBehaviour
     {
-        #region Declarations
+        /// Declarations
 
-        const string HighScoreKey = "HighScore";
-        const string GridWidthKey = "GridWidth";
-        const string GridHeightKey = "GridHeight";
-        const string TilesVariationsKey = "TilesVariations";
-        const string MatchDurationKey = "MatchDuration";
+        const string HIGH_SCORE_KEY = "HighScore";
+        const string GRID_WIDTH_KEY = "GridWidth";
+        const string GRID_HEIGHT_KEY = "GridHeight";
+        const string TILES_VARIATIONS_KEY = "TilesVariations";
+        const string MATCH_DURATION_KEY = "MatchDuration";
 
         [SerializeField] GameConfig _gameConfig;
         [SerializeField] GridSettings _gridSettings;
@@ -32,19 +32,17 @@ namespace OldBard.Match3.Gameplay.Controllers
         [SerializeField] Services.Match3.Audio.AudioSettings _audioSettings;
         [SerializeField] AudioService _audioService;
 
+        readonly CancellationTokenSource _timerLoopTokenSource = new();
+
         GridService _gridService;
         AnimationsController _animationsController;
-
-        CancellationTokenSource _timerLoopTokenSource;
 
         bool _gameIsRunning;
 
         int _score;
         int _timeLeft;
 
-        #endregion
-
-        #region Accessors
+        /// Accessors
 
         /// <summary>
         /// Game Score
@@ -65,7 +63,7 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// <summary>
         /// Time Left to end the match
         /// </summary>
-        private int TimeLeft
+        int TimeLeft
         {
             get => _timeLeft;
             set
@@ -78,9 +76,7 @@ namespace OldBard.Match3.Gameplay.Controllers
             }
         }
 
-        #endregion
-        
-        #region Initialization
+        /// Initialization
 
         /// <summary>
         /// Unity Awake Event.
@@ -112,7 +108,7 @@ namespace OldBard.Match3.Gameplay.Controllers
         {
             _inputManager.DisableInput();
 
-            var duration = PlayerPrefs.GetInt(MatchDurationKey, _gameConfig.GameDuration);
+            var duration = PlayerPrefs.GetInt(MATCH_DURATION_KEY, _gameConfig.GameDuration);
 
             _animationsController = new AnimationsController(_gameConfig.LerpAnimationCurve);
 
@@ -128,8 +124,6 @@ namespace OldBard.Match3.Gameplay.Controllers
 
             _inputManager.EnableInput();
 
-            _timerLoopTokenSource = new CancellationTokenSource();
-
             TimerLoop(_timerLoopTokenSource.Token);
         }
 
@@ -143,7 +137,7 @@ namespace OldBard.Match3.Gameplay.Controllers
             _gameUIController.Init(_gameConfig, _animationsController);
             _audioService.InitSound(_audioSettings);
 
-            var highScore = PlayerPrefs.GetInt(HighScoreKey, 0);
+            var highScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY, 0);
             _gameUIController.UpdateHighScore(highScore);
         }
 
@@ -154,16 +148,16 @@ namespace OldBard.Match3.Gameplay.Controllers
         {
             // Gets the configuration. Loads the data from the PlayerPrefs. Uses the
             // information in the config as default.
-            var width = PlayerPrefs.GetInt(GridWidthKey, _gridSettings.DefaultGridWidth);
-            var height = PlayerPrefs.GetInt(GridHeightKey, _gridSettings.DefaultGridHeight);
-            var variations = PlayerPrefs.GetInt(TilesVariationsKey, _gameConfig.NumberOfTileTypes);
+            var width = PlayerPrefs.GetInt(GRID_WIDTH_KEY, _gridSettings.DefaultGridWidth);
+            var height = PlayerPrefs.GetInt(GRID_HEIGHT_KEY, _gridSettings.DefaultGridHeight);
+            var variations = PlayerPrefs.GetInt(TILES_VARIATIONS_KEY, _gameConfig.NumberOfTileTypes);
             
             _gridService = new GridService(_gridSettings, width, height, variations, System.DateTime.UtcNow.Millisecond);
 
             _gridView.Initialize(_gameConfig, _gridService, _animationsController);
             
             // Gets the tiles data created by the GridManager and sends it to be shown in the view
-            var tiles = _gridService.ShuffleGrid();
+            List<TileObject> tiles = _gridService.ShuffleGrid();
             await _gridView.PlayTilesDropAnim(tiles);
         }
 
@@ -187,9 +181,7 @@ namespace OldBard.Match3.Gameplay.Controllers
             _gameUIController.TimeOut -= _audioService.PlayTimeoutClip;
         }
 
-        #endregion
-
-        #region Loop
+        /// Loop
 
         /// <summary>
         /// Timer loop
@@ -199,7 +191,7 @@ namespace OldBard.Match3.Gameplay.Controllers
             while(_gameIsRunning)
             {
                 // We only update once per second.
-                await Task.Delay(1000);
+                await Task.Delay(1000, token);
 
                 if(token.IsCancellationRequested)
                 {
@@ -235,14 +227,14 @@ namespace OldBard.Match3.Gameplay.Controllers
             _inputManager.DisableInput();
             
             // Calculates the score and checks if it is the new High Score
-            var highScore = PlayerPrefs.GetInt(HighScoreKey, 0);
+            var highScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY, 0);
 
             var isHighScore = Score > highScore;
             
             // Updates the High Score if needed
             if(isHighScore)
             {
-                PlayerPrefs.SetInt(HighScoreKey, Score);
+                PlayerPrefs.SetInt(HIGH_SCORE_KEY, Score);
             }
 
             UnregisterEvents();
@@ -252,20 +244,17 @@ namespace OldBard.Match3.Gameplay.Controllers
             _audioService.PlayGameOver(isHighScore);
         }
 
-        #endregion
-
-
-        #region Matching
+        /// Matching
 
         /// <summary>
         /// Unity's input callback with the data about dragging
         /// </summary>
         /// <param name="curPos">The cursor current position</param>
         /// <param name="initialDragPos">The drag initial position</param>
-        public void OnDragged(Vector3 curPos, Vector3 initialDragPos)
+        void OnDragged(Vector3 curPos, Vector3 initialDragPos)
         {
             // Gets the mouse pointer position and compares with the previous position
-            var diff = curPos - initialDragPos;
+            Vector3 diff = curPos - initialDragPos;
 
             // If the player dragged enough, process the input
             if(diff.sqrMagnitude >= _gameConfig.DragDetectionThreshold * _gameConfig.DragDetectionThreshold)
@@ -305,7 +294,7 @@ namespace OldBard.Match3.Gameplay.Controllers
             await _gridView.PlaySwapAnim(tile1, tile2);
 
             // Tries to swap the tiles in the logic and get the affected tiles (matches)
-            var tiles = _gridService.TrySwapTiles(tile1, tile2);
+            List<TileObject> tiles = _gridService.TrySwapTiles(tile1, tile2);
 
             var success = tiles.Count > 0;
             
@@ -345,7 +334,7 @@ namespace OldBard.Match3.Gameplay.Controllers
                 await _gridView.PlayHideTilesAnim(tiles);
 
                 // Moves the tiles down. Gets a list of all the involved tiles from the manager
-                var animatedTiles = _gridService.MoveTilesDown();
+                List<TileObject> animatedTiles = _gridService.MoveTilesDown();
 
                 // Shows in the view the movement of the tiles and placement of new ones
                 await _gridView.PlayTilesDropAnim(animatedTiles);
@@ -358,8 +347,8 @@ namespace OldBard.Match3.Gameplay.Controllers
 
             if (!gmDebug.Equals(gvDebug))
             {
-                UnityEngine.Debug.Log("GridM: " + gmDebug);
-                UnityEngine.Debug.Log("GridV: " + gvDebug);
+                Debug.Log("GridM: " + gmDebug);
+                Debug.Log("GridV: " + gvDebug);
             }
         }
 
@@ -373,10 +362,8 @@ namespace OldBard.Match3.Gameplay.Controllers
             _ = _gridView.PlayHintAnim(list);
         }
 
-        #endregion
+        /// Utils
 
-        #region Utils
-        
         /// <summary>
         /// Gets the direction information based on the drag vector
         /// </summary>
@@ -392,7 +379,5 @@ namespace OldBard.Match3.Gameplay.Controllers
 
             return dir.y > 0 ? GridService.DragDirection.Down : GridService.DragDirection.Up;
         }
-
-        #endregion
     }
 }

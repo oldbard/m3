@@ -33,7 +33,7 @@ namespace OldBard.Match3.Meta
         [SerializeField] TextMeshProUGUI _highScoreText;
 
         [SerializeField] AudioSource _backgroundMusic;
-        
+
         void Awake()
         {
             _widthSlider.value = PlayerPrefs.GetInt(GridWidthKey, _gridSettings.DefaultGridWidth);

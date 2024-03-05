@@ -13,9 +13,9 @@ namespace OldBard.Match3.Gameplay.Views.UI
     /// </summary>
     public class GameUIController : MonoBehaviour
     {
-        [SerializeField] private Text _timer;
-        [SerializeField] private Text _score;
-        [SerializeField] private Text _highScore;
+        [SerializeField] Text _timer;
+        [SerializeField] Text _score;
+        [SerializeField] Text _highScore;
         [SerializeField] GameOverScreenController _gameOverController;
 
         GameConfig _config;
@@ -34,7 +34,7 @@ namespace OldBard.Match3.Gameplay.Views.UI
 
         public void UpdateTimer(int timeLeft)
         {
-            var timeSpan = TimeSpan.FromSeconds(timeLeft);
+            TimeSpan timeSpan = TimeSpan.FromSeconds(timeLeft);
             _timer.text = $"Time Left: {timeSpan:mm':'ss}";
 
             if(!_blinkingTimer && timeLeft <= _config.TimeToShowWarning + 1)
@@ -46,24 +46,24 @@ namespace OldBard.Match3.Gameplay.Views.UI
 
         async void ShowBlinkingTimer()
         {
-            var defColor = _timer.color;
+            Color defColor = _timer.color;
             
             // Wait half a second to start showing the timer in red
             await Task.Delay(_config.StartBlinkDelay);
 
-            float lerpInterval = 0.3f;
+            const float LERP_INTERVAL = 0.3f;
 
             for(var i = 0; i < _config.TimeToShowWarning; i++)
             {
                 await Task.Delay(_config.FullColorBlinkDelay);
 
-                await _animationsController.PlayTextColorAnim(_timer, defColor, Color.red, lerpInterval);
+                await _animationsController.PlayTextColorAnim(_timer, defColor, Color.red, LERP_INTERVAL);
 
                 TimeOut?.Invoke();
 
                 await Task.Delay(_config.FullColorBlinkDelay);
 
-                await _animationsController.PlayTextColorAnim(_timer, Color.red, defColor, lerpInterval);
+                await _animationsController.PlayTextColorAnim(_timer, Color.red, defColor, LERP_INTERVAL);
             }
         }
 

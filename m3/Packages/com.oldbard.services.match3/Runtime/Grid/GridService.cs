@@ -9,7 +9,7 @@ namespace OldBard.Services.Match3.Grid
     /// </summary>
     public class GridService : IDisposable
     {
-        #region Declarations
+        /// Declarations
 
         /// <summary>
         /// Enumeration of the possible drag directions
@@ -41,20 +41,18 @@ namespace OldBard.Services.Match3.Grid
         /// </summary>
         TileObject[] _tiles;
         
-        // List of TileObjects being use as caches for the iterations.
+        // List of TileObjects being used as caches for the iterations.
         List<TileObject> _tilesToUpdateView;
         List<TileObject> _contiguousCache;
         List<TileObject> _listCache;
 
-        Random _random = null;
 
         public readonly int GridWidth;
         public readonly int GridHeight;
         readonly int _tilesVariations;
+        readonly Random _random;
 
-        #endregion
-
-        #region Accessors / Properties
+        /// Accessors / Properties
 
         /// <summary>
         /// Settings for the Grid
@@ -105,9 +103,7 @@ namespace OldBard.Services.Match3.Grid
             }
         }
 
-        #endregion
-
-        #region Init
+        /// Init
 
         /// <summary>
         /// Creates a GridManager instance
@@ -438,7 +434,7 @@ namespace OldBard.Services.Match3.Grid
                     // Gets an invalid tile
 
                     // Gets the first tile above the current one
-                    var upTile = GetTileUp(x, y + 1);
+                    TileObject upTile = _gridModel.GetTileUp(x, y + 1);
 
                     // if there are none, create it. Else swaps with the invalid one. Sending it up
                     // while bringing down the valid
@@ -469,9 +465,7 @@ namespace OldBard.Services.Match3.Grid
             return _tilesToUpdateView;
         }
 
-        #endregion
-
-        #region GridAccess
+        /// GridAccess
 
         /// <summary>
         /// Looks up for a tile in the given column <paramref name="x"/> starting by a
@@ -496,9 +490,8 @@ namespace OldBard.Services.Match3.Grid
             return null;
         }
 
-        #endregion
 
-        #region Detection
+        /// Detection
 
         /// <summary>
         /// Tries to swap the given tiles and find a match

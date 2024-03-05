@@ -55,9 +55,8 @@ namespace OldBard.Match3.Config
         /// <returns>The TileViewData for the specific information</returns>
         public TileViewData GetViewData(TileType tileType, int variation)
         {
-            for(var i = 0; i < _tilesData.Length; i++)
+            foreach(TileData tileData in _tilesData)
             {
-                var tileData = _tilesData[i];
                 if(tileData.TileType == tileType)
                 {
                     return tileData.ViewData[variation];

@@ -10,7 +10,7 @@ namespace OldBard.Services.Match3.Grid.Views
     /// </summary>
     public class TileView : MonoBehaviour
     {
-        const string AnimActiveParam = "Blink";
+        const string ANIM_ACTIVE_PARAM = "Blink";
         
         [SerializeField] SpriteRenderer _body;
         [SerializeField] SpriteRenderer _eye;
@@ -22,9 +22,11 @@ namespace OldBard.Services.Match3.Grid.Views
         Transform _transform;
         Vector3 _defaultScale;
 
-        public TileType AppliedTileType;
-        public TileObject TileObject;
-        public Vector3 TargetPosition;
+        public TileType AppliedTileType { get; private set; }
+        public Vector3 TargetPosition { get; set; }
+        TileObject TileObject { get; set; }
+        
+        static readonly int s_blink = Animator.StringToHash(ANIM_ACTIVE_PARAM);
 
         public Vector3 Position
         {
@@ -40,10 +42,10 @@ namespace OldBard.Services.Match3.Grid.Views
 
         public bool NeedsRefresh => AppliedTileType != TileObject.TileType;
 
-        private void Awake()
+        void Awake()
         {
             _transform = transform;
-            _defaultScale = transform.localScale;
+            _defaultScale = _transform.localScale;
 
             _animator.speed = Random.Range(0.8f, 1f);
         }
@@ -70,14 +72,14 @@ namespace OldBard.Services.Match3.Grid.Views
             _selected.gameObject.SetActive(true);
         }
 
-        public void DehighlightTile()
+        public void DisableTileHighlight()
         {
             _selected.gameObject.SetActive(false);
         }
 
         public void DoBlink()
         {
-            _animator.SetTrigger(AnimActiveParam);
+            _animator.SetTrigger(s_blink);
         }
 
         public void SetSelectedBackgroundAlpha(float alpha)
@@ -98,7 +100,7 @@ namespace OldBard.Services.Match3.Grid.Views
                     return;
                 }
 
-                _animator.SetTrigger(AnimActiveParam);
+                _animator.SetTrigger(s_blink);
             }
         }
     }

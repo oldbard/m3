@@ -12,20 +12,13 @@ namespace OldBard.Match3.Gameplay.Views
     /// <summary>
     /// GridViewController
     /// </summary>
-    
-    // This is a partial class. It has the animation methods separated to
-    // make it easier to support
     public class GridViewController : MonoBehaviour
     {
-        #region Declarations
+        /// Declarations
 
-        const int TileBackgroundZPos = -1;
-        const int TileZPos = -2;
+        const int TILE_Z_POS = -2;
 
-        /// <summary>
-        /// Class with information about the tile view
-        /// </summary>
-        public class TileObjectView
+        public class TileInstance
         {
             public TileView TileView;
             public TileObject TileObject;
@@ -33,7 +26,6 @@ namespace OldBard.Match3.Gameplay.Views
         }
 
         [SerializeField] Transform _tilesParent;
-        [SerializeField] Transform _boardFrame;
         [SerializeField] SpriteRenderer _tilesBackground;
         [SerializeField] BoxCollider2D _tilesBackgroundCollider;
 
@@ -45,35 +37,30 @@ namespace OldBard.Match3.Gameplay.Views
         /// <summary>
         /// A HashSet with all the tiles in the view
         /// </summary>
-        HashSet<TileObjectView> _tiles;
         
         // A list used as cache for the required iterations 
         List<TileObjectView> _tilesBeingAnimated;
+        HashSet<TileInstance> _tiles = new();
 
         int _variation;
 
         int _yCascadePositionOffset;
         
-        #endregion
-
-        #region Accessors
+        /// Accessors
 
         /// <summary>
         /// Gets a tile given it's coordinates
         /// </summary>
         /// <param name="x">The Tile Column</param>
         /// <param name="y">The Tile Row</param>
-        private TileObjectView this[int x, int y] => GetTileAt(x, y);
-
-        #endregion
-
-        #region Init
+        TileInstance this[int x, int y] => GetTileAt(x, y);
 
         /// <summary>
         /// Initializes the Grid View
         /// </summary>
         /// <param name="gameConfig">The Game Config</param>
         /// <param name="gridService">The Grid Manager</param>
+        /// <param name="animationsController"></param>
         public void Initialize(GameConfig gameConfig, GridService gridService, AnimationsController animationsController)
         {
             _gameConfig = gameConfig;
@@ -120,9 +107,9 @@ namespace OldBard.Match3.Gameplay.Views
                 for (var y = 0; y < height; y++)
                 {
                     // Creates the Tiles Views
-                    var tile = Instantiate(_gameConfig.TilePrefab, _tilesParent);
+                    TileView tile = Instantiate(_gameConfig.TilePrefab, _tilesParent);
 
-                    var tileView = new TileObjectView
+                    var tileView = new TileInstance
                     {
                         TileView = tile,
                         TileObject = null,
@@ -155,24 +142,22 @@ namespace OldBard.Match3.Gameplay.Views
             _gridService = null;
         }
 
-        #endregion
-
-        #region Populate
+        /// Populate
         
         /// <summary>
         /// Creates a TileObjectView based on it's object counterpart
         /// </summary>
         /// <param name="tileObject">TileObject reference data</param>
-        /// <returns>The TileObjectView</returns>
-        TileObjectView CreateTile(TileObject tileObject)
+        /// <returns>The TileInstance</returns>
+        TileInstance CreateTile(TileObject tileObject)
         {
             // Virtually spawns a view tile
-            var tileView = SpawnTile(tileObject);
+            TileInstance tileView = SpawnTile(tileObject);
 
             // We place the tile higher in the screen to move it down and have a cascade effect.
             SetTilePos(tileObject.PosX,
                 tileObject.PosY + _yCascadePositionOffset,
-                TileZPos, tileView.TileView.gameObject);
+                TILE_Z_POS, tileView.TileView.gameObject);
             return tileView;
         }
 
@@ -180,11 +165,11 @@ namespace OldBard.Match3.Gameplay.Views
         /// Virtually Spawns a TileObjectView
         /// </summary>
         /// <param name="tile">TileObject reference data</param>
-        /// <returns>The TileObjectView</returns>
-        TileObjectView SpawnTile(TileObject tile)
+        /// <returns>The TileInstance</returns>
+        TileInstance SpawnTile(TileObject tile)
         {
             // Go through the list to find the specific TileObject reference
-            foreach(var curTile in _tiles)
+            foreach(TileInstance curTile in _tiles)
             {
                 if (curTile.Spawned == false)
                 {
@@ -209,24 +194,22 @@ namespace OldBard.Match3.Gameplay.Views
         /// Disables a tile and sets it as not spawned
         /// </summary>
         /// <param name="tile">Tile do despawn</param>
-        void DeSpawnTile(TileObjectView tile)
+        void DeSpawnTile(TileInstance tile)
         {
             tile.Spawned = false;
             tile.TileView.gameObject.SetActive(false);
         }
 
-        #endregion
-        
-        #region Access
+        /// Access
 
         /// <summary>
         /// Returns the TileObjectView correspondent to the TileObject
         /// </summary>
         /// <param name="tile"></param>
-        /// <returns>The TileObjectView</returns>
-        TileObjectView GetTileAt(TileObject tile)
+        /// <returns>The TileInstance</returns>
+        TileInstance GetTileAt(TileObject tile)
         {
-            foreach(var curTile in _tiles)
+            foreach(TileInstance curTile in _tiles)
             {
                 if(curTile.Spawned && curTile.TileObject == tile)
                 {
@@ -242,10 +225,10 @@ namespace OldBard.Match3.Gameplay.Views
         /// </summary>
         /// <param name="x">Tile Column</param>
         /// <param name="y">Tile Row</param>
-        /// <returns>The TileObjectView</returns>
-        TileObjectView GetTileAt(int x, int y)
+        /// <returns>The TileInstance</returns>
+        TileInstance GetTileAt(int x, int y)
         {
-            foreach(var curTile in _tiles)
+            foreach(TileInstance curTile in _tiles)
             {
                 if(curTile.TileObject.PosX == x && curTile.TileObject.PosY == y)
                 {
@@ -264,11 +247,12 @@ namespace OldBard.Match3.Gameplay.Views
         public TileObject GetTileAt(Vector3 pos)
         {
             // Converts the screen position into a world position
-            var worldPos = _camera.ScreenToWorldPoint(pos);
+            Vector3 worldPos = _camera.ScreenToWorldPoint(pos);
             
             // Calculates the column and row based on the given position and tiles sizes
-            var x = Mathf.RoundToInt(worldPos.x / _gridService.GridSettings.TileViewWidth);
-            var y = Mathf.RoundToInt(worldPos.y / _gridService.GridSettings.TileViewHeight);
+            var x = Mathf.RoundToInt((worldPos.x - _gridOffset.x) / _gridService.GridSettings.TileViewWidth);
+            var y = Mathf.RoundToInt((worldPos.y - _gridOffset.y) / _gridService.GridSettings.TileViewHeight);
+            
             return this[x, y]?.TileObject;
         }
 
@@ -304,12 +288,13 @@ namespace OldBard.Match3.Gameplay.Views
         /// Fills up the given TileObjectViews list based on the given TileObjects list
         /// </summary>
         /// <param name="tiles">List of TileObjects</param>
-        /// <param name="viewsList">List of TileObjectViews to be filled</param>
-        List<TileObjectView> GetViewTiles(List<TileObject> tiles, bool setPositions = false)
+        /// <param name="tilesBeingAnimated">List of TileInstances to be filled</param>
+        /// <param name="setPositions"></param>
+        void GetViewTiles(List<TileObject> tiles, List<TileInstance> tilesBeingAnimated, bool setPositions = false)
         {
             _tilesBeingAnimated.Clear();
 
-            for (var i = 0; i < tiles.Count; i++)
+            foreach(TileObject tile in tiles)
             {
                 var tile = tiles[i];
                 var tileView = GetTileAt(tile);
@@ -320,13 +305,13 @@ namespace OldBard.Match3.Gameplay.Views
                     tileView = CreateTile(tile);
                 }
 
-                if (tileView.TileView.NeedsRefresh)
+                if(tileInstance.TileView.NeedsRefresh)
                 {
-                    var viewData = _gameConfig.GetViewData(tile.TileType, _variation);
-                    tileView.TileView.Init(tile, viewData);
+                    TileViewData viewData = _gameConfig.GetViewData(tile.TileType, _variation);
+                    tileInstance.TileView.Init(tile, viewData);
                 }
 
-                _tilesBeingAnimated.Add(tileView);
+                tilesBeingAnimated.Add(tileInstance);
 
                 if(setPositions)
                 {
@@ -357,10 +342,7 @@ namespace OldBard.Match3.Gameplay.Views
             return sb.ToString();
         }
 
-
-        #endregion
-
-        #region Animations
+        /// Animations
 
         /// <summary>
         /// Animation of tiles dropping into the board
@@ -391,8 +373,8 @@ namespace OldBard.Match3.Gameplay.Views
             _tilesBeingAnimated.Clear();
 
             // Gets the tile views and positions information
-            var tileView1 = GetTileAt(tile1);
-            var tileView2 = GetTileAt(tile2);
+            TileInstance tileView1 = GetTileAt(tile1);
+            TileInstance tileView2 = GetTileAt(tile2);
 
             tileView1.TileView.TargetPosition = tileView2.TileView.Position;
             tileView2.TileView.TargetPosition = tileView1.TileView.Position;
@@ -426,8 +408,7 @@ namespace OldBard.Match3.Gameplay.Views
         /// <summary>
         /// Plays a hint animation with a possible match
         /// </summary>
-        /// <param name="tilesMatched">List of Tiles to animate</param>
-        public async Task PlayHintAnim(List<TileObject> tilesMatched)
+        public async Task PlayHintAnim()
         {
             // Gets the view information about the tiles
             var tiles = GetViewTiles(tilesMatched);
@@ -459,9 +440,7 @@ namespace OldBard.Match3.Gameplay.Views
             }
         }
 
-        #endregion
-
-        #region Utils
+        /// Utils
 
         /// <summary>
         /// Calculates the position of the tile when being dropped in the board
@@ -473,9 +452,7 @@ namespace OldBard.Match3.Gameplay.Views
             return new Vector3(
                 tileObject.PosX * _gridService.GridSettings.TileViewWidth,
                 (tileObject.PosY + _yCascadePositionOffset) * _gridService.GridSettings.TileViewHeight,
-                TileZPos);
+                TILE_Z_POS);
         }
-
-        #endregion
     }
 }
