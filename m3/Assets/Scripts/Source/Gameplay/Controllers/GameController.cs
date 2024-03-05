@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using OldBard.Match3.Config;
 using OldBard.Match3.Gameplay.Views;
@@ -40,6 +38,7 @@ namespace OldBard.Match3.Gameplay.Controllers
         bool _gameIsRunning;
 
         int _score;
+        int _initialDuration;
         float _timeLeft;
 
         /// Accessors
@@ -57,25 +56,6 @@ namespace OldBard.Match3.Gameplay.Controllers
                     _score = value;
                     _gameUIController.UpdateScore(_score);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Time Left to end the match
-        /// </summary>
-        float TimeLeft
-        {
-            get => _timeLeft;
-            set
-            {
-                if((Math.Abs(_timeLeft - value) < float.Epsilon))
-                {
-                    return;
-                }
-
-                _timeLeft = value;
-                int flooredTimeLeft = Mathf.FloorToInt(_timeLeft);
-                _gameUIController.UpdateTimer(flooredTimeLeft);
             }
         }
 
@@ -109,13 +89,13 @@ namespace OldBard.Match3.Gameplay.Controllers
         {
             _inputManager.DisableInput();
 
-            var duration = PlayerPrefs.GetInt(MATCH_DURATION_KEY, _gameConfig.GameDuration);
+            _initialDuration = PlayerPrefs.GetInt(MATCH_DURATION_KEY, _gameConfig.GameDuration);
 
             _animationsController = new AnimationsController(_gameConfig.LerpAnimationCurve);
 
-            InitHUD();
+            _timeLeft = _initialDuration;
 
-            TimeLeft = duration;
+            InitHUD();
 
             await InitGrid();
 
@@ -138,6 +118,8 @@ namespace OldBard.Match3.Gameplay.Controllers
 
             var highScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY, 0);
             _gameUIController.UpdateHighScore(highScore);
+
+            UpdateTimer();
         }
 
         /// <summary>
@@ -189,23 +171,36 @@ namespace OldBard.Match3.Gameplay.Controllers
                 return;
             }
             
-            TimeLeft -= Time.deltaTime;
+            _timeLeft -= Time.deltaTime;
+
+            int flooredTimeLeft = UpdateTimer();
 
             // If time is over. Game Over
-            if (TimeLeft <= 0f)
+            if (flooredTimeLeft <= 0)
             {
                 GameOver();
+
+                return;
             }
 
             // Checks if the game is running, if the player can interact and if a
             // given amount of time has passed. If so, shows a hint to the player
-            if(!_inputManager.CanDrag || (_inputManager.TimeSinceLastInteraction <= _gameConfig.TimeToShowHint))
+            if(!_inputManager.CanDrag || (_inputManager.TimeSinceLastInteraction < _gameConfig.TimeToShowHint - 1))
             {
                 return;
             }
 
             OnShowHint();
             _inputManager.ResetLastInteraction();
+        }
+
+        int UpdateTimer()
+        {
+            int flooredTimeLeft = Mathf.FloorToInt(_timeLeft);
+            
+            _gameUIController.UpdateTimer(flooredTimeLeft);
+
+            return flooredTimeLeft;
         }
 
         /// <summary>
