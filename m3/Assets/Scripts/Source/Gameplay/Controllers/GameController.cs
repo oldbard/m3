@@ -8,6 +8,7 @@ using OldBard.Match3.Gameplay.Views.UI;
 using OldBard.Services.Match3.Audio;
 using OldBard.Services.Match3.Grid;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace OldBard.Match3.Gameplay.Controllers
 {
@@ -301,20 +302,19 @@ namespace OldBard.Match3.Gameplay.Controllers
             // Plays the swap animation and waits for it to end
             await _gridView.PlaySwapAnim(tile1, tile2);
 
-            // Tries to swap the tiles in the logic and get the affected tiles (matches)
-            List<TileObject> tiles = _gridService.TrySwapTiles(tile1, tile2);
-
-            var success = tiles.Count > 0;
-            
-            if(success)
+            using(ListPool<TileObject>.Get(out List<TileObject> tiles))
             {
-                // If we managed to make a match, process it
-                await ProcessMatches(tiles);
-            }
-            else
-            {
-                // If we failed to make a match, undo the swap
-                await _gridView.PlaySwapAnim(tile1, tile2);
+                // Tries to swap the tiles in the logic and get the affected tiles (matches)
+                if(_gridService.TrySwapTiles(tile1, tile2, tiles))
+                {
+                    // If we managed to make a match, process it
+                    await ProcessMatches(tiles);
+                }
+                else
+                {
+                    // If we failed to make a match, undo the swap
+                    await _gridView.PlaySwapAnim(tile1, tile2);
+                }
             }
 
             // Re-enables the input
@@ -327,6 +327,8 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// <param name="tiles">List of matched tiles</param>
         async Task ProcessMatches(List<TileObject> tiles)
         {
+            ListPool<TileObject>.Get(out List<TileObject> tilesToUpdateView);
+
             // As we remove the matched tiles and have new ones coming, we may
             // find new matches which needs to be processed. So we keep on
             // Cascading / matching until all is done.
@@ -342,14 +344,18 @@ namespace OldBard.Match3.Gameplay.Controllers
                 await _gridView.PlayHideTilesAnim(tiles);
 
                 // Moves the tiles down. Gets a list of all the involved tiles from the manager
-                List<TileObject> animatedTiles = _gridService.MoveTilesDown();
+                tilesToUpdateView.Clear();
+                _gridService.MoveTilesDown(tilesToUpdateView);
 
                 // Shows in the view the movement of the tiles and placement of new ones
-                await _gridView.PlayTilesDropAnim(animatedTiles);
+                await _gridView.PlayTilesDropAnim(tilesToUpdateView);
 
                 // Checks if we have more tiles to process because of the cascading
                 tiles = _gridService.FindAndProcessMatches();
             }
+            
+            ListPool<TileObject>.Release(tilesToUpdateView);
+            
             var gmDebug = _gridService.DebugGrid();
             var gvDebug = _gridView.DebugGrid();
 

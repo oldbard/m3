@@ -22,11 +22,6 @@ namespace OldBard.Services.Match3.Grid
             Left
         }
 
-        // List of TileObjects being used as caches for the iterations.
-        List<TileObject> _tilesToUpdateView;
-        List<TileObject> _contiguousCache;
-        List<TileObject> _listCache;
-
         readonly GridModel _gridModel;
         readonly GridMatchesHelper _gridMatchesHelper;
         readonly GridMatchesValidator _gridMatchesValidator;
@@ -66,13 +61,14 @@ namespace OldBard.Services.Match3.Grid
         }
 
         /// Init
-
         /// <summary>
         /// Creates a GridManager instance
         /// </summary>
+        /// <param name="gridSettings">Grid Configuration</param>
         /// <param name="width">Grid width</param>
         /// <param name="height">Grid height</param>
         /// <param name="variations">Amount of tiles variations</param>
+        /// <param name="randomSeed">Seed for the random calls</param>
         public GridService(GridSettings gridSettings, int width, int height, int variations, int randomSeed)
         {
             GridSettings = gridSettings;
@@ -83,13 +79,6 @@ namespace OldBard.Services.Match3.Grid
 
             _tilesVariations = variations;
             _random = new Random(randomSeed);
-
-            // Initializes the containers
-            var maxTiles = width * height;
-
-            _tilesToUpdateView = new List<TileObject>(maxTiles);
-            _contiguousCache = new List<TileObject>(maxTiles);
-            _listCache = new List<TileObject>(maxTiles);
         }
 
         public string DebugGrid()
@@ -111,15 +100,16 @@ namespace OldBard.Services.Match3.Grid
         /// Moves the tiles down to occupy the positions left by destroyed tiles
         /// </summary>
         /// <returns>A List with the TileObjects</returns>
-        public List<TileObject> MoveTilesDown()
+        public void MoveTilesDown(List<TileObject> tilesToUpdateView)
         {
-            _tilesToUpdateView.Clear();
+            ListPool<TileObject>.Get(out List<TileObject> tiles);
             
             for(var x = 0; x < _gridModel.GridWidth; x++)
             {
                 for(var y = 0; y < _gridModel.GridHeight; y++)
                 {
                     TileObject tile = _gridModel[x, y];
+
                     if(tile.Valid)
                     {
                         continue;
@@ -134,29 +124,29 @@ namespace OldBard.Services.Match3.Grid
                     // while bringing down the valid
                     if(upTile == null)
                     {
-                        tile.TileType = (TileType)_random.Next(0, _tilesVariations);
+                        tile.TileType = (TileType) _random.Next(0, _tilesVariations);
 
-                        _contiguousCache.Clear();
-                        _gridMatchesHelper.FillMatchedContiguousTiles(tile, ref _contiguousCache);
+                        tiles.Clear();
+                        _gridMatchesHelper.FillMatchedContiguousTiles(tile, ref tiles);
 
                         tile.Valid = true;
-                        _tilesToUpdateView.Add(tile);
+                        tilesToUpdateView.Add(tile);
                     }
                     else
                     {
                         _gridModel.SwapTilesPos(tile, upTile);
-                        _tilesToUpdateView.Add(upTile);
+                        tilesToUpdateView.Add(upTile);
                     }
                 }
+                
+                ListPool<TileObject>.Release(tiles);
             }
 
             // Makes sure we have possible matches. If not, refresh the grid
             if(!HasPossibleMatch)
             {
-                _tilesToUpdateView.AddRange(_gridMatchesHelper.CreatePossibleMatch());
+                tilesToUpdateView.AddRange(_gridMatchesHelper.CreatePossibleMatch());
             }
-
-            return _tilesToUpdateView;
         }
 
         /// GridAccess
@@ -179,24 +169,23 @@ namespace OldBard.Services.Match3.Grid
         /// <param name="tile1">Tile to be swapped</param>
         /// <param name="tile2">Tile to be swapped</param>
         /// <returns>A List with the TileObjects</returns>
-        public List<TileObject> TrySwapTiles(TileObject tile1, TileObject tile2)
+        public bool TrySwapTiles(TileObject tile1, TileObject tile2, List<TileObject> tiles)
         {
             _gridModel.SwapTilesPos(tile1, tile2);
 
-            _contiguousCache.Clear();
-            _gridMatchesHelper.FillMatchedContiguousTiles(tile1, ref _contiguousCache);
-            _gridMatchesHelper.FillMatchedContiguousTiles(tile2, ref _contiguousCache);
+            _gridMatchesHelper.FillMatchedContiguousTiles(tile1, ref tiles);
+            _gridMatchesHelper.FillMatchedContiguousTiles(tile2, ref tiles);
 
-            if(_contiguousCache.Count > 1)
+            if(tiles.Count > 1)
             {
-                ProcessMatches(_contiguousCache);
+                ProcessMatches(tiles);
             }
             else
             {
                 _gridModel.SwapTilesPos(tile1, tile2);
             }
             
-            return _contiguousCache;
+            return tiles.Count > 0;
         }
 
         /// <summary>
@@ -217,7 +206,7 @@ namespace OldBard.Services.Match3.Grid
         /// <returns>A List with the TileObjects</returns>
         public List<TileObject> FindAndProcessMatches()
         {
-            var matches = _gridMatchesHelper.GetMatches();
+            List<TileObject> matches = _gridMatchesHelper.GetMatches();
 
             if(matches.Count > 1)
             {
@@ -232,15 +221,6 @@ namespace OldBard.Services.Match3.Grid
         /// </summary>
         public void Dispose()
         {
-            _tilesToUpdateView.Clear();
-            _tilesToUpdateView = null;
-            
-            _contiguousCache.Clear();
-            _contiguousCache = null;
-            
-            _listCache.Clear();
-            _listCache = null;
-
             _gridModel.Dispose();
         }
     }
