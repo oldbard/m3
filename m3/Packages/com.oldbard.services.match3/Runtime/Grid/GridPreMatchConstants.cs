@@ -6,14 +6,6 @@
 		
 		// XXO
 
-		public static readonly (int[,], int[,]) MatchPatternHXXO = ( MatchPatternHXXORequiredTiles, MatchPatternHXXOMatchTiles );
-		public static readonly (int[,], int[,]) MatchPatternHXOX = ( MatchPatternHXOXRequiredTiles, MatchPatternHXOXMatchTiles );
-		public static readonly (int[,], int[,]) MatchPatternHOXX = ( MatchPatternHOXXRequiredTiles, MatchPatternHOXXMatchTiles );
-
-		public static readonly (int[,], int[,]) MatchPatternVXXO = ( MatchPatternVXXORequiredTiles, MatchPatternVXXOMatchTiles );
-		public static readonly (int[,], int[,]) MatchPatternVXOX = ( MatchPatternVXOXRequiredTiles, MatchPatternVXOXMatchTiles );
-		public static readonly (int[,], int[,]) MatchPatternVOXX = ( MatchPatternVOXXRequiredTiles, MatchPatternVOXXMatchTiles );
-
 		// 01
 		// XX
 		public static readonly int[,] MatchPatternHXXORequiredTiles =

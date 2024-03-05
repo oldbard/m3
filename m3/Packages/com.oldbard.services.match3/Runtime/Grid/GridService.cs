@@ -138,9 +138,9 @@ namespace OldBard.Services.Match3.Grid
                         tilesToUpdateView.Add(upTile);
                     }
                 }
-                
-                ListPool<TileObject>.Release(tiles);
             }
+            
+            ListPool<TileObject>.Release(tiles);
 
             // Makes sure we have possible matches. If not, refresh the grid
             if(!HasPossibleMatch)
