@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OldBard.Match3.Config;
@@ -33,15 +34,13 @@ namespace OldBard.Match3.Gameplay.Controllers
         [SerializeField] Services.Match3.Audio.AudioSettings _audioSettings;
         [SerializeField] AudioService _audioService;
 
-        readonly CancellationTokenSource _timerLoopTokenSource = new();
-
         GridService _gridService;
         AnimationsController _animationsController;
 
         bool _gameIsRunning;
 
         int _score;
-        int _timeLeft;
+        float _timeLeft;
 
         /// Accessors
 
@@ -64,16 +63,19 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// <summary>
         /// Time Left to end the match
         /// </summary>
-        int TimeLeft
+        float TimeLeft
         {
             get => _timeLeft;
             set
             {
-                if(_timeLeft != value)
+                if((Math.Abs(_timeLeft - value) < float.Epsilon))
                 {
-                    _timeLeft = value;
-                    _gameUIController.UpdateTimer(_timeLeft);
+                    return;
                 }
+
+                _timeLeft = value;
+                int flooredTimeLeft = Mathf.FloorToInt(_timeLeft);
+                _gameUIController.UpdateTimer(flooredTimeLeft);
             }
         }
 
@@ -93,8 +95,6 @@ namespace OldBard.Match3.Gameplay.Controllers
         void OnDestroy()
         {
             _gameIsRunning = false;
-
-            _timerLoopTokenSource.Cancel();
 
             UnregisterEvents();
 
@@ -124,8 +124,6 @@ namespace OldBard.Match3.Gameplay.Controllers
             _gameIsRunning = true;
 
             _inputManager.EnableInput();
-
-            TimerLoop(_timerLoopTokenSource.Token);
         }
 
         /// <summary>
@@ -184,38 +182,30 @@ namespace OldBard.Match3.Gameplay.Controllers
 
         /// Loop
 
-        /// <summary>
-        /// Timer loop
-        /// </summary>
-        async void TimerLoop(CancellationToken token)
+        void Update()
         {
-            while(_gameIsRunning)
+            if(!_gameIsRunning)
             {
-                // We only update once per second.
-                await Task.Delay(1000, token);
+                return;
+            }
+            
+            TimeLeft -= Time.deltaTime;
 
-                if(token.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                TimeLeft -= 1;
-
-                // If time is over. Game Over
-                if (TimeLeft <= 0f)
-                {
-                    GameOver();
-                }
-
-                // Checks if the game is running, if the player can interact and if a
-                // given amount of time has passed. If so, shows a hint to the player
-                if (_inputManager.CanDrag && _inputManager.TimeSinceLastInteraction > _gameConfig.TimeToShowHint)
-                {
-                    OnShowHint();
-                    _inputManager.ResetLastInteraction();
-                }
+            // If time is over. Game Over
+            if (TimeLeft <= 0f)
+            {
+                GameOver();
             }
 
+            // Checks if the game is running, if the player can interact and if a
+            // given amount of time has passed. If so, shows a hint to the player
+            if(!_inputManager.CanDrag || (_inputManager.TimeSinceLastInteraction <= _gameConfig.TimeToShowHint))
+            {
+                return;
+            }
+
+            OnShowHint();
+            _inputManager.ResetLastInteraction();
         }
 
         /// <summary>
