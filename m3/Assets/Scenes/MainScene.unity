@@ -3327,7 +3327,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa1fea2d3061cf4692faf68336810ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _config: {fileID: 11400000, guid: 58e461235d1fb734585d76fd87ac78a2, type: 2}
+  _gameConfig: {fileID: 11400000, guid: 58e461235d1fb734585d76fd87ac78a2, type: 2}
   _gridSettings: {fileID: 11400000, guid: 5c4458c3ddd17864991a29c56e2aa523, type: 2}
   _widthSlider: {fileID: 2128857947}
   _heightSlider: {fileID: 338023292}
