@@ -12,5 +12,10 @@ namespace OldBard.Services.Match3.Grid
         public int PosY;
         public TileType TileType;
         public bool Valid;
+
+        public override string ToString()
+        {
+            return $"({PosX}, {PosY}), {TileType}, {Valid}";
+        }
     }
 }

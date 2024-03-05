@@ -28,6 +28,11 @@ namespace OldBard.Services.Match3.Grid.Views
         
         static readonly int s_blink = Animator.StringToHash(ANIM_ACTIVE_PARAM);
 
+        public TileView(Vector3 targetPosition)
+        {
+            TargetPosition = targetPosition;
+        }
+
         public Vector3 Position
         {
             get => _transform.localPosition;
@@ -36,7 +41,6 @@ namespace OldBard.Services.Match3.Grid.Views
 
         public Vector3 LocalScale
         {
-            get => _transform.localScale;
             set => _transform.localScale = value;
         }
 
@@ -61,6 +65,8 @@ namespace OldBard.Services.Match3.Grid.Views
 
             transform.localScale = _defaultScale;
 
+            name = tile.TileType.ToString();
+
             TileObject = tile;
             AppliedTileType = tile.TileType;
 
@@ -84,7 +90,10 @@ namespace OldBard.Services.Match3.Grid.Views
 
         public void SetSelectedBackgroundAlpha(float alpha)
         {
-            _selected.color = new Color(_selected.color.r, _selected.color.g, _selected.color.b, alpha);
+            Color color = _selected.color;
+            color = new Color(color.r, color.g, color.b, alpha);
+            
+            _selected.color = color;
         }
 
         async void DoRandomBlinkAnimation()

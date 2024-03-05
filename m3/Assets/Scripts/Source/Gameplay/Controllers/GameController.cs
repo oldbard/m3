@@ -257,27 +257,35 @@ namespace OldBard.Match3.Gameplay.Controllers
             Vector3 diff = curPos - initialDragPos;
 
             // If the player dragged enough, process the input
-            if(diff.sqrMagnitude >= _gameConfig.DragDetectionThreshold * _gameConfig.DragDetectionThreshold)
+            if(!(diff.sqrMagnitude >= _gameConfig.DragDetectionThreshold * _gameConfig.DragDetectionThreshold))
             {
-                // Gets the tile that is being dragged
-                var pickedTile = _gridView.GetTileAt(initialDragPos);
-
-                // Dragged outside the board
-                if(pickedTile == null) return;
-
-                // Gets the neighbour tile based on the direction of the drag
-                var dir = GetDirection(diff.normalized);
-                var neighbour = _gridService.GetNeighbourTile(pickedTile, dir);
-
-                // Dragged in a bad direction
-                if(neighbour == null) return;
-
-                // Data is fine. Blocks the input
-                _inputManager.DisableInput();
-                
-                // Swaps the involved tiles positions
-                DoSwapAnims(pickedTile, neighbour);
+                return;
             }
+
+            // Gets the tile that is being dragged
+            TileObject pickedTile = _gridView.GetTileAt(initialDragPos);
+
+            // Dragged outside the board
+            if(pickedTile == null)
+            {
+                return;
+            }
+
+            // Gets the neighbour tile based on the direction of the drag
+            GridService.DragDirection dir = GetDirection(diff.normalized);
+            TileObject neighbour = _gridService.GetNeighbourTile(pickedTile, dir);
+
+            // Dragged in a bad direction
+            if(neighbour == null)
+            {
+                return;
+            }
+
+            // Data is fine. Blocks the input
+            _inputManager.DisableInput();
+                
+            // Swaps the involved tiles positions
+            DoSwapAnims(pickedTile, neighbour);
         }
 
         /// <summary>

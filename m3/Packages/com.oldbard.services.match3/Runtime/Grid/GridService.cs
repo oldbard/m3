@@ -57,7 +57,7 @@ namespace OldBard.Services.Match3.Grid
         /// <summary>
         /// Settings for the Grid
         /// </summary>
-        public GridSettings GridSettings;
+        public GridSettings GridSettings { get; }
 
         /// <summary>
         /// Checks if there are any possible matches available

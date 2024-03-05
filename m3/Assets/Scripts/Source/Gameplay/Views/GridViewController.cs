@@ -55,6 +55,8 @@ namespace OldBard.Match3.Gameplay.Views
         /// <param name="y">The Tile Row</param>
         TileInstance this[int x, int y] => GetTileAt(x, y);
 
+        /// Initialization
+
         /// <summary>
         /// Initializes the Grid View
         /// </summary>
@@ -128,7 +130,7 @@ namespace OldBard.Match3.Gameplay.Views
             _tilesBeingAnimated.Clear();
             _tilesBeingAnimated = null;
 
-            foreach(var tile in _tiles)
+            foreach(TileInstance tile in _tiles)
             {
                 if (tile != null)
                 {
@@ -171,20 +173,22 @@ namespace OldBard.Match3.Gameplay.Views
             // Go through the list to find the specific TileObject reference
             foreach(TileInstance curTile in _tiles)
             {
-                if (curTile.Spawned == false)
+                if(curTile.Spawned)
                 {
-                    curTile.TileObject = tile;
-
-                    // Gets and sets the tile based on the view data in the config
-                    var viewData = _gameConfig.GetViewData(tile.TileType, _variation);
-                    curTile.TileView.Init(tile, viewData);
-
-                    // Enables the tile and tags it as spawned
-                    curTile.TileView.gameObject.SetActive(true);
-                    curTile.Spawned = true;
-
-                    return curTile;
+                    continue;
                 }
+
+                curTile.TileObject = tile;
+
+                // Gets and sets the tile based on the view data in the config
+                TileViewData viewData = _gameConfig.GetViewData(tile.TileType, _variation);
+                curTile.TileView.Init(tile, viewData);
+
+                // Enables the tile and tags it as spawned
+                curTile.TileView.gameObject.SetActive(true);
+                curTile.Spawned = true;
+
+                return curTile;
             }
 
             return null;
@@ -296,14 +300,8 @@ namespace OldBard.Match3.Gameplay.Views
 
             foreach(TileObject tile in tiles)
             {
-                var tile = tiles[i];
-                var tileView = GetTileAt(tile);
-
                 // If we don't have a view set for the specific tile. We create it. 
-                if(tileView == null)
-                {
-                    tileView = CreateTile(tile);
-                }
+                TileInstance tileInstance = GetTileAt(tile) ?? CreateTile(tile);
 
                 if(tileInstance.TileView.NeedsRefresh)
                 {
@@ -313,19 +311,16 @@ namespace OldBard.Match3.Gameplay.Views
 
                 tilesBeingAnimated.Add(tileInstance);
 
-                if(setPositions)
+                if(!setPositions)
                 {
-                    tileView.TileView.Position = tileView.Spawned
-                        ? tileView.TileView.Position
-                        : CascadeInitialPosition(tileView.TileObject);
-
-                    tileView.TileView.TargetPosition = GetTilePos(tileView.TileObject);
+                    continue;
                 }
+
+                tileInstance.TileView.Position = tileInstance.Spawned ? tileInstance.TileView.Position : CascadeInitialPosition(tileInstance.TileObject);
+
+                tileInstance.TileView.TargetPosition = GetTilePos(tileInstance.TileObject);
             }
-
-            return _tilesBeingAnimated;
         }
-
 
         public string DebugGrid()
         {
