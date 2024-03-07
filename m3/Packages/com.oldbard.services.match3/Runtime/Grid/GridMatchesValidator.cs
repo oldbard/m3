@@ -60,18 +60,6 @@ namespace OldBard.Services.Match3.Grid
 			return false;
 		}
 
-		string DebugList(List<TileObject> foundMatch)
-		{
-			var sb = new StringBuilder();
-
-			foreach(TileObject tileObject in foundMatch)
-			{
-				sb.AppendLine(tileObject.ToString());
-			}
-
-			return sb.ToString();
-		}
-
 		bool TryGetPreMatch(TileInstance tile, IReadOnlyList<TileInstance> tiles, int[,] requiredTiles, int[,] matchTiles, List<TileInstance> foundMatch)
 		{
 			if(!TryGetValidRequiredTiles(tile, tiles, requiredTiles, foundMatch))
