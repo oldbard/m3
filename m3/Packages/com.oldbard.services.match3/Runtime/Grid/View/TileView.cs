@@ -10,8 +10,12 @@ namespace OldBard.Services.Match3.Grid.Views
     /// </summary>
     public class TileView : MonoBehaviour
     {
+        const int TILE_Z_POS = -2;
+
         const string ANIM_ACTIVE_PARAM = "Blink";
         
+        static readonly int s_blink = Animator.StringToHash(ANIM_ACTIVE_PARAM);
+
         [SerializeField] SpriteRenderer _body;
         [SerializeField] SpriteRenderer _eye;
         [SerializeField] SpriteRenderer _mouth;
@@ -20,18 +24,10 @@ namespace OldBard.Services.Match3.Grid.Views
         [SerializeField] Animator _animator;
 
         Transform _transform;
-        Vector3 _defaultScale;
+        Vector3 _defaultScale = Vector3.one;
 
         public TileType AppliedTileType { get; private set; }
         public Vector3 TargetPosition { get; set; }
-        TileObject TileObject { get; set; }
-        
-        static readonly int s_blink = Animator.StringToHash(ANIM_ACTIVE_PARAM);
-
-        public TileView(Vector3 targetPosition)
-        {
-            TargetPosition = targetPosition;
-        }
 
         public Vector3 Position
         {
@@ -44,7 +40,9 @@ namespace OldBard.Services.Match3.Grid.Views
             set => _transform.localScale = value;
         }
 
-        public bool NeedsRefresh => AppliedTileType != TileObject.TileType;
+        GridConfig _config;
+
+        int _variation;
 
         void Awake()
         {
@@ -54,8 +52,17 @@ namespace OldBard.Services.Match3.Grid.Views
             _animator.speed = Random.Range(0.8f, 1f);
         }
 
-        public void Init(TileObject tile, TileViewData viewData)
+        public void Initialize(GridConfig config, int variation)
         {
+            _config = config;
+            
+            _variation = variation;
+        }
+
+        public void ChangeTileType(TileType tileType)
+        {
+            TileViewData viewData = _config.GetViewData(tileType, _variation);
+            
             _body.sprite = viewData.Body;
             _eye.sprite = viewData.Eye;
             _mouth.sprite = viewData.Mouth;
@@ -65,12 +72,26 @@ namespace OldBard.Services.Match3.Grid.Views
 
             transform.localScale = _defaultScale;
 
-            name = tile.TileType.ToString();
+            name = tileType.ToString();
 
-            TileObject = tile;
-            AppliedTileType = tile.TileType;
+            AppliedTileType = tileType;
 
             DoRandomBlinkAnimation();
+        }
+
+        public void SetPosition(int x, int y, float width, float height, int yCascadeOffset, Vector3 gridOffset)
+        {
+            var localPosition = new Vector3(
+                x * width,
+                (y * height) + yCascadeOffset,
+                TILE_Z_POS);
+            
+            localPosition += gridOffset;
+            transform.localPosition = localPosition;
+
+            localPosition.y -= yCascadeOffset;
+
+            TargetPosition = localPosition;
         }
 
         public void HighlightTile()
@@ -111,6 +132,18 @@ namespace OldBard.Services.Match3.Grid.Views
 
                 _animator.SetTrigger(s_blink);
             }
+        }
+
+        public void Activate()
+        {
+            transform.localScale = _defaultScale;
+            gameObject.SetActive(true);
+        }
+
+        public void Deactivate()
+        {
+            gameObject.SetActive(false);
+            AppliedTileType = TileType.None;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace OldBard.Services.Match3.Grid
 			_preMatchPatterns[5] = ( GridPreMatchConstants.MatchPatternVOXXRequiredTiles, GridPreMatchConstants.MatchPatternVOXXMatchTiles );
 		}
 
-		TileObject GetTileObject(int x, int y, IReadOnlyList<TileObject> tiles)
+		TileInstance GetTileInstance(int x, int y, IReadOnlyList<TileInstance> tiles)
 		{
 			if (x < 0 || x >= _gridWidth || y < 0 || y >= _gridHeight)
 			{
@@ -39,13 +39,13 @@ namespace OldBard.Services.Match3.Grid
 		/// Gets the first possible match in the grid
 		/// </summary>
 		/// <returns>If whether there is a match</returns>
-		public bool GetPreMatch(IReadOnlyList<TileObject> tiles, List<TileObject> foundMatch)
+		public bool GetPreMatch(IReadOnlyList<TileInstance> tiles, List<TileInstance> foundMatch)
 		{
 			for (var x = 0; x < _gridWidth; x++)
 			{
 				for (var y = 0; y < _gridHeight; y++)
 				{
-					TileObject tile = GetTileObject(x, y, tiles);
+					TileInstance tile = GetTileInstance(x, y, tiles);
 
 					foreach((int[,], int[,]) preMatchPattern in _preMatchPatterns)
 					{
@@ -62,7 +62,7 @@ namespace OldBard.Services.Match3.Grid
 
 		string DebugList(List<TileObject> foundMatch)
 		{
-			StringBuilder sb = new StringBuilder();
+			var sb = new StringBuilder();
 
 			foreach(TileObject tileObject in foundMatch)
 			{
@@ -72,7 +72,7 @@ namespace OldBard.Services.Match3.Grid
 			return sb.ToString();
 		}
 
-		bool TryGetPreMatch(TileObject tile, IReadOnlyList<TileObject> tiles, int[,] requiredTiles, int[,] matchTiles, List<TileObject> foundMatch)
+		bool TryGetPreMatch(TileInstance tile, IReadOnlyList<TileInstance> tiles, int[,] requiredTiles, int[,] matchTiles, List<TileInstance> foundMatch)
 		{
 			if(!TryGetValidRequiredTiles(tile, tiles, requiredTiles, foundMatch))
 			{
@@ -88,7 +88,7 @@ namespace OldBard.Services.Match3.Grid
 
 			TileType requiredTileType = foundMatch[0].TileType;
 
-			TileObject matchTile = GetValidMatchTile(tile, tiles, matchTiles, requiredTileType);
+			TileInstance matchTile = GetValidMatchTile(tile, tiles, matchTiles, requiredTileType);
 
 			if(matchTile == null)
 			{
@@ -101,7 +101,7 @@ namespace OldBard.Services.Match3.Grid
 			return true;
 		}
 
-		bool TryGetValidRequiredTiles(TileObject tile, IReadOnlyList<TileObject> tiles, int[,] requiredTiles, List<TileObject> requiredTilesInstances)
+		bool TryGetValidRequiredTiles(TileInstance tile, IReadOnlyList<TileInstance> tiles, int[,] requiredTiles, List<TileInstance> requiredTilesInstances)
 		{
 			TileType requiredTileType = TileType.None;
 
@@ -110,7 +110,7 @@ namespace OldBard.Services.Match3.Grid
 				int x = requiredTiles[row, 0];
 				int y = requiredTiles[row, 1];
 
-				TileObject requiredTile = GetTileObject(tile.PosX + x, tile.PosY + y, tiles);
+				TileInstance requiredTile = GetTileInstance(tile.PosX + x, tile.PosY + y, tiles);
 
 				if(requiredTile == null)
 				{
@@ -133,14 +133,14 @@ namespace OldBard.Services.Match3.Grid
 			return true;
 		}
 
-		TileObject GetValidMatchTile(TileObject tile, IReadOnlyList<TileObject> tiles, int[,] matchTiles, TileType requiredTileType)
+		TileInstance GetValidMatchTile(TileInstance tile, IReadOnlyList<TileInstance> tiles, int[,] matchTiles, TileType requiredTileType)
 		{
 			for(int row = 0; row < matchTiles.GetLength(0); row++)
 			{
 				int x = matchTiles[row, 0];
 				int y = matchTiles[row, 1];
 
-				TileObject requiredTile = GetTileObject(tile.PosX + x, tile.PosY + y, tiles);
+				TileInstance requiredTile = GetTileInstance(tile.PosX + x, tile.PosY + y, tiles);
 
 				if(requiredTile?.TileType != requiredTileType)
 				{

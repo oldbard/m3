@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 using Random = System.Random;
 
 namespace OldBard.Services.Match3.Grid
@@ -7,9 +8,6 @@ namespace OldBard.Services.Match3.Grid
     class GridMatchesHelper
     {
         readonly IGridService _gridService;
-        readonly List<TileObject> _tilesToUpdateView = new();
-        List<TileObject> _listCache = new();
-        List<TileObject> _contiguousCache = new();
 
         readonly int _tilesVariations;
         readonly Random _random;
@@ -22,178 +20,74 @@ namespace OldBard.Services.Match3.Grid
             _random = new Random(randomSeed);
         }
 
-        /// <summary>
-        /// Fills up the grid with tiles
-        /// </summary>
-        public List<TileObject> ShuffleGrid()
+        public void CreatePossibleMatch(List<TileInstance> possibleMatchTiles)
         {
-            // Fills up the grid
-            List<TileObject> tiles = CreateTiles();
-
-            if (!_gridService.HasPossibleMatch)
+            using(ListPool<TileInstance>.Get(out List<TileInstance> possibleMatches))
             {
-                tiles.AddRange(CreatePossibleMatch());
-            }
-
-            ShuffleMatches();
-            Debug.Log(_gridService.DebugGrid());
-            
-            return tiles;
-        }
-
-        /// <summary>
-        /// Fills up the grid with tiles
-        /// </summary>
-        /// <returns>A List with the TileObjects</returns>
-        List<TileObject> CreateTiles()
-        {
-            _tilesToUpdateView.Clear();
-
-            for (var y = _gridService.GridHeight - 1; y >= 0; y--)
-            {
-                for (var x = 0; x < _gridService.GridWidth; x++)
+                for(var x = _gridService.GridWidth - 1; x >= 0; x--)
                 {
-                    TileObject tile = _gridService[x, y];
-
-                    // If the TileObject instance was not created yet, does it 
-                    if (tile == null)
+                    for(var y = _gridService.GridHeight - 1; y >= 0; y--)
                     {
-                        tile = new TileObject
-                        {
-                            PosX = x,
-                            PosY = y,
-                            Valid = true
-                        };
-                        _gridService.SetTile(tile, x, y);
-                    }
-                    tile.TileType = (TileType)_random.Next(0, _tilesVariations);
-
-                    _tilesToUpdateView.Add(tile);
-                }
-            }
-            // Makes sure the game does not start already with matches
-            ShuffleMatches();
-            return _tilesToUpdateView;
-        }
-
-        /// <summary>
-        /// Goes through the grid making sure that there are no matches already
-        /// </summary>
-        void ShuffleMatches()
-        {
-            var needsShuffle = true;
-
-            // TODO: Fix this!
-            while (needsShuffle)
-            {
-                var restartCheck = false;
-                needsShuffle = false;
-                for (var x = 0; x < _gridService.GridWidth; x++)
-                {
-                    for (var y = 0; y < _gridService.GridHeight; y++)
-                    {
-                        TileObject tile = _gridService[x, y];
+                        TileInstance tile = _gridService[x, y];
 
                         if(tile == null)
                         {
                             continue;
                         }
 
-                        _contiguousCache.Clear();
-                        FillMatchedContiguousTiles(tile, ref _contiguousCache);
+                        possibleMatches.Clear();
 
-                        // Found already a match in the grid. Let's randomly set it to another type
-                        if(_contiguousCache.Count <= 0)
+                        FillHorizontalMatchesPair(tile, possibleMatches);
+                        if(possibleMatches.Count > 1)
                         {
-                            continue;
+                            TileInstance changedTile = CreateHorizontalPreMatch(possibleMatches);
+                            possibleMatchTiles.Add(changedTile);
+
+                            return;
                         }
 
-                        needsShuffle = true;
-                        foreach(TileObject tileObject in _contiguousCache)
+                        possibleMatches.Clear();
+
+                        FillVerticalMatchesPair(tile, possibleMatchTiles);
+                        if(possibleMatchTiles.Count > 1)
                         {
-                            tileObject.TileType = (TileType)_random.Next(0, _tilesVariations);
+                            TileInstance changedTile = CreateVerticalPreMatch(possibleMatchTiles);
+                            possibleMatchTiles.Add(changedTile);
+
+                            return;
                         }
-
-                        restartCheck = true;
-                        break;
-                    }
-
-                    if (restartCheck)
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-
-        public List<TileObject> CreatePossibleMatch()
-        {
-            _listCache.Clear();
-
-            for (var x = _gridService.GridWidth - 1; x >= 0; x--)
-            {
-                for (var y = _gridService.GridHeight - 1; y >= 0; y--)
-                {
-                    TileObject tile = _gridService[x, y];
-
-                    if(tile == null)
-                    {
-                        continue;
-                    }
-
-                    FillHorizontalMatchesPair(tile, ref _listCache);
-                    if (_listCache.Count > 1)
-                    {
-                        var changedTile = CreateHorizontalPreMatch(_listCache);
-                        _listCache.Clear();
-                        _listCache.Add(changedTile);
-
-                        return _listCache;
-                    }
-
-                    FillVerticalMatchesPair(tile, ref _listCache);
-                    if (_listCache.Count > 1)
-                    {
-                        TileObject changedTile = CreateVerticalPreMatch(_listCache);
-                        _listCache.Clear();
-                        _listCache.Add(changedTile);
-
-                        return _listCache;
                     }
                 }
             }
 
-            return CreateHorizontalPreMatch();
+            CreateNewHorizontalPreMatch(possibleMatchTiles);
         }
 
-        List<TileObject> CreateHorizontalPreMatch()
+        void CreateNewHorizontalPreMatch(List<TileInstance> possibleMatchTiles)
         {
-            _listCache.Clear();
-
+            var initialX = _random.Next(0, _gridService.GridWidth - 4);
             var targetY = _random.Next(0, _gridService.GridHeight - 1);
-            var tileType = (TileType)_random.Next(0, _tilesVariations);
+            var tileType = (TileType) _random.Next(0, _tilesVariations);
 
-            TileObject tile = _gridService[0, targetY];
-            tile.TileType = tileType;
-            _listCache.Add(tile);
+            TileInstance tile = _gridService[initialX, targetY];
+            tile.SetTileType(tileType);
+            possibleMatchTiles.Add(tile);
 
-            tile = _gridService[1, targetY];
-            tile.TileType = tileType;
-            _listCache.Add(tile);
+            tile = _gridService[initialX + 1, targetY];
+            tile.SetTileType(tileType);
+            possibleMatchTiles.Add(tile);
 
-            tile = _gridService[3, targetY];
-            tile.TileType = tileType;
-            _listCache.Add(tile);
+            tile = _gridService[initialX + 3, targetY];
+            tile.SetTileType(tileType);
+            possibleMatchTiles.Add(tile);
 
-            UnityEngine.Debug.Log($"Found a pre match! Set tile at {0}, {targetY} to {tile.TileType}");
-
-            return _listCache;
+            Debug.Log($"Found a pre match! Set tile at {0}, {targetY} to {tile.TileType}");
         }
 
-        TileObject CreateHorizontalPreMatch(List<TileObject> tiles)
+        TileInstance CreateHorizontalPreMatch(List<TileInstance> tiles)
         {
-            TileObject tile1 = tiles[0];
-            TileObject tile2 = tiles[1];
+            TileInstance tile1 = tiles[0];
+            TileInstance tile2 = tiles[1];
 
             var targetX = 0;
             var targetY = tile1.PosY;
@@ -234,17 +128,17 @@ namespace OldBard.Services.Match3.Grid
                 }
             }
 
-            TileObject tile = _gridService[targetX, targetY];
-            UnityEngine.Debug.Log($"Found a pre match! Set tile at {targetX}, {targetY} to {tile1.TileType}");
-            tile.TileType = tile1.TileType;
+            TileInstance tile = _gridService[targetX, targetY];
+            Debug.Log($"Found a pre match! Set tile at {targetX}, {targetY} to {tile1.TileType}");
+            tile.SetTileType(tile1.TileType);
 
             return tile;
         }
 
-        TileObject CreateVerticalPreMatch(List<TileObject> tiles)
+        TileInstance CreateVerticalPreMatch(List<TileInstance> tiles)
         {
-            TileObject tile1 = tiles[0];
-            TileObject tile2 = tiles[1];
+            TileInstance tile1 = tiles[0];
+            TileInstance tile2 = tiles[1];
 
             var targetX = tile1.PosX;
             var targetY = 0;
@@ -285,9 +179,9 @@ namespace OldBard.Services.Match3.Grid
                 }
             }
 
-            TileObject tile = _gridService[targetX, targetY];
-            UnityEngine.Debug.Log($"Found a pre match! Set tile at {targetX}, {targetY} to {tile1.TileType}");
-            tile.TileType = tile1.TileType;
+            TileInstance tile = _gridService[targetX, targetY];
+            Debug.Log($"Found a pre match! Set tile at {targetX}, {targetY} to {tile1.TileType}");
+            tile.SetTileType(tile1.TileType);
 
             return tile;
         }
@@ -296,117 +190,142 @@ namespace OldBard.Services.Match3.Grid
         /// Searches for a match around the <paramref name="tile"/>
         /// </summary>
         /// <param name="tile">The tile candidate of the match</param>
-        /// <param name="list">List of TileObjects to be filled with a match</param>
-        public void FillMatchedContiguousTiles(TileObject tile, ref List<TileObject> list)
+        /// <param name="tiles">List of TileObjects to be filled with a match</param>
+        public void FillMatchedContiguousTiles(TileInstance tile, List<TileInstance> tiles)
         {
             var foundMatches = false;
-            
-            List<TileObject> matchList = FillHorizontalMatch(tile);
-            list.AddRange(matchList);
-            foundMatches = matchList.Count > 0;
 
-            matchList = FillVerticalMatch(tile);
-            list.AddRange(matchList);
-            foundMatches = foundMatches || matchList.Count > 0;
-
-            if (!foundMatches)
+            using(ListPool<TileInstance>.Get(out List<TileInstance> foundTiles))
             {
-                return;
-            }
+                if(FillHorizontalMatch(tile, foundTiles))
+                {
+                    AddUniqueOnly(foundTiles, tiles);
+                    foundMatches = true;
+                }
+                foundTiles.Clear();
 
-            list.Add(tile);
+                if(FillVerticalMatch(tile, foundTiles))
+                {
+                    AddUniqueOnly(foundTiles, tiles);
+                    foundMatches = true;
+                }
+
+                if(foundMatches)
+                {
+                    if(!tiles.Contains(tile))
+                    {
+                        tiles.Add(tile);
+                    }
+                }
+            }
+        }
+
+        void AddUniqueOnly(List<TileInstance> from, List<TileInstance> to)
+        {
+            foreach(TileInstance tileInstance in from)
+            {
+                if(!to.Contains(tileInstance))
+                {
+                    to.Add(tileInstance);
+                }
+            }
         }
 
         /// <summary>
         /// Looks left and right to get a Horizontal Match
         /// </summary>
         /// <param name="tile">The tile candidate of the match</param>
-        /// <returns>A List with the TileObjects</returns>
-        List<TileObject> FillHorizontalMatch(TileObject tile)
+        /// <param name="tiles">TileInstances container</param>
+        bool FillHorizontalMatch(TileInstance tile, List<TileInstance> tiles)
         {
-            _listCache.Clear();
-
             // Look right
             for (var i = tile.PosX + 1; i < _gridService.GridWidth; i++)
             {
-                TileObject curTile = _gridService[i, tile.PosY];
+                TileInstance curTile = _gridService[i, tile.PosY];
                 if (curTile.TileType == tile.TileType)
                 {
-                    _listCache.Add(curTile);
+                    tiles.Add(curTile);
                 }
                 else
                 {
                     break;
                 }
             }
+
             // Look left
             for (var i = tile.PosX - 1; i >= 0; i--)
             {
-                TileObject curTile = _gridService[i, tile.PosY];
+                TileInstance curTile = _gridService[i, tile.PosY];
                 if (curTile.TileType == tile.TileType)
                 {
-                    _listCache.Add(curTile);
+                    tiles.Add(curTile);
                 }
                 else
                 {
                     break;
                 }
             }
-            if (_listCache.Count < 2)
+
+            if(tiles.Count >= 2)
             {
-                _listCache.Clear();
+                return true;
             }
 
-            return _listCache;
+            tiles.Clear();
+
+            return false;
+
         }
 
         /// <summary>
         /// Looks up and down to get a Vertical Match
         /// </summary>
         /// <param name="tile">The tile candidate of the match</param>
-        /// <returns>A List with the TileObjects</returns>
-        List<TileObject> FillVerticalMatch(TileObject tile)
+        /// <param name="tiles">TileInstances container</param>
+        bool FillVerticalMatch(TileInstance tile, List<TileInstance> tiles)
         {
-            _listCache.Clear();
-
-            // Look Down
+            // Look Up
             for (var i = tile.PosY + 1; i < _gridService.GridHeight; i++)
             {
-                TileObject curTile = _gridService[tile.PosX, i];
+                TileInstance curTile = _gridService[tile.PosX, i];
                 if (curTile.TileType == tile.TileType)
                 {
-                    _listCache.Add(curTile);
+                    tiles.Add(curTile);
                 }
                 else
                 {
                     break;
                 }
             }
-            // Look Up
+
+            // Look Down
             for (var i = tile.PosY - 1; i >= 0; i--)
             {
-                TileObject curTile = _gridService[tile.PosX, i];
+                TileInstance curTile = _gridService[tile.PosX, i];
                 if (curTile.TileType == tile.TileType)
                 {
-                    _listCache.Add(curTile);
+                    tiles.Add(curTile);
                 }
                 else
                 {
                     break;
                 }
             }
-            if (_listCache.Count < 2)
+
+            if(tiles.Count >= 2)
             {
-                _listCache.Clear();
+                return true;
             }
 
-            return _listCache;
+            tiles.Clear();
+
+            return false;
         }
 
-        void FillHorizontalMatchesPair(TileObject tile, ref List<TileObject> tiles)
+        void FillHorizontalMatchesPair(TileInstance tile, List<TileInstance> tiles)
         {
-            TileObject curTile = _gridService[tile.PosX + 1, tile.PosY];
-            if (curTile != null && (curTile.TileType == tile.TileType))
+            TileInstance curTile = _gridService[tile.PosX + 1, tile.PosY];
+            if (curTile?.TileType == tile.TileType)
             {
                 tiles.Add(tile);
                 tiles.Add(curTile);
@@ -414,7 +333,7 @@ namespace OldBard.Services.Match3.Grid
                 return;
             }
             curTile = _gridService[tile.PosX + 2, tile.PosY];
-            if (curTile != null && (curTile.TileType == tile.TileType))
+            if (curTile?.TileType == tile.TileType)
             {
                 tiles.Add(tile);
                 tiles.Add(curTile);
@@ -423,7 +342,7 @@ namespace OldBard.Services.Match3.Grid
             }
 
             curTile = _gridService[tile.PosX - 1, tile.PosY];
-            if (curTile != null && (curTile.TileType == tile.TileType))
+            if (curTile?.TileType == tile.TileType)
             {
                 tiles.Add(tile);
                 tiles.Add(curTile);
@@ -439,10 +358,10 @@ namespace OldBard.Services.Match3.Grid
             tiles.Add(curTile);
         }
 
-        void FillVerticalMatchesPair(TileObject tile, ref List<TileObject> tiles)
+        void FillVerticalMatchesPair(TileInstance tile, List<TileInstance> tiles)
         {
-            TileObject curTile = _gridService[tile.PosX, tile.PosY + 1];
-            if (curTile != null && (curTile.TileType == tile.TileType))
+            TileInstance curTile = _gridService[tile.PosX, tile.PosY + 1];
+            if (curTile?.TileType == tile.TileType)
             {
                 tiles.Add(tile);
                 tiles.Add(curTile);
@@ -450,7 +369,7 @@ namespace OldBard.Services.Match3.Grid
                 return;
             }
             curTile = _gridService[tile.PosX, tile.PosY + 2];
-            if (curTile != null && (curTile.TileType == tile.TileType))
+            if (curTile?.TileType == tile.TileType)
             {
                 tiles.Add(tile);
                 tiles.Add(curTile);
@@ -459,7 +378,7 @@ namespace OldBard.Services.Match3.Grid
             }
 
             curTile = _gridService[tile.PosX, tile.PosY - 1];
-            if (curTile != null && (curTile.TileType == tile.TileType))
+            if (curTile?.TileType == tile.TileType)
             {
                 tiles.Add(tile);
                 tiles.Add(curTile);
@@ -475,19 +394,29 @@ namespace OldBard.Services.Match3.Grid
             tiles.Add(curTile);
         }
 
-        public List<TileObject> GetMatches()
+        public bool TryGetMatches(List<TileInstance> matches)
         {
-            _contiguousCache.Clear();
-
             for (var x = 0; x < _gridService.GridWidth; x++)
             {
                 for (var y = 0; y < _gridService.GridHeight; y++)
                 {
-                    FillMatchedContiguousTiles(_gridService[x, y], ref _contiguousCache);
+                    TileInstance tileInstance = _gridService[x, y];
+
+                    if(tileInstance.TileType == TileType.None)
+                    {
+                        Debug.LogError($"There should be no active tiles of type {TileType.None}: {tileInstance}");
+                    }
+
+                    if(!tileInstance.IsValid)
+                    {
+                        continue;
+                    }
+
+                    FillMatchedContiguousTiles(tileInstance, matches);
                 }
             }
 
-            return _contiguousCache;
+            return matches.Count > 0;
         }
 
     }

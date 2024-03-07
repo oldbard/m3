@@ -9,9 +9,9 @@ namespace OldBard.Services.Match3.Grid
         /// <summary>
         /// Array with all the tiles in the match
         /// </summary>
-        TileObject[] _tiles;
+        TileInstance[] _tiles;
 
-        public IReadOnlyList<TileObject> Tiles => _tiles;
+        public IReadOnlyList<TileInstance> Tiles => _tiles;
 
         public readonly int GridWidth;
         public readonly int GridHeight;
@@ -21,7 +21,7 @@ namespace OldBard.Services.Match3.Grid
         /// </summary>
         /// <param name="x">Grid Column</param>
         /// <param name="y">Grid Row</param>
-        public TileObject this[int x, int y]
+        public TileInstance this[int x, int y]
         {
             get
             {
@@ -52,7 +52,7 @@ namespace OldBard.Services.Match3.Grid
 
             var maxTiles = GridWidth * GridHeight;
 
-            _tiles = new TileObject[maxTiles];
+            _tiles = new TileInstance[maxTiles];
         }
 
         public string DebugGrid()
@@ -77,7 +77,7 @@ namespace OldBard.Services.Match3.Grid
         /// </summary>
         /// <param name="tile1">Tile to swap position</param>
         /// <param name="tile2">Tile to swap position</param>
-        public void SwapTilesPos(TileObject tile1, TileObject tile2)
+        public void SwapTilesPos(TileInstance tile1, TileInstance tile2)
         {
             var prevX = tile1.PosX;
             var prevY = tile1.PosY;
@@ -92,7 +92,7 @@ namespace OldBard.Services.Match3.Grid
         /// <param name="tile">Tile to get the neighbour of</param>
         /// <param name="dir">The direction of the dragging</param>
         /// <returns>The Neighbour TileObject. Or Null if in an invalid position.</returns>
-        public TileObject GetNeighbourTile(TileObject tile, DragDirection dir)
+        public TileInstance GetNeighbourTile(TileInstance tile, DragDirection dir)
         {
             return dir switch
             {
@@ -115,17 +115,17 @@ namespace OldBard.Services.Match3.Grid
         /// <param name="x">Column</param>
         /// <param name="fromY">Initial row</param>
         /// <returns>The first tile above the given coordinates</returns>
-        public TileObject GetTileUp(int x, int fromY)
+        public TileInstance GetTileUp(int x, int fromY)
         {
             for (var y = fromY; y < GridHeight; y++)
             {
-                TileObject tile = this[x, y];
+                TileInstance tile = this[x, y];
                 if (tile == null)
                 {
                     return null;
                 }
 
-                if (tile.Valid)
+                if (tile.IsValid)
                 {
                     return tile;
                 }

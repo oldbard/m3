@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Pool;
 using Random = System.Random;
 
@@ -28,6 +29,10 @@ namespace OldBard.Services.Match3.Grid
 
         readonly int _tilesVariations;
         readonly Random _random;
+        
+        readonly Vector3 _gridOffset;
+
+        public Vector3 GridOffset => _gridOffset;
 
         /// Accessors / Properties
 
@@ -36,12 +41,9 @@ namespace OldBard.Services.Match3.Grid
         /// </summary>
         public GridSettings GridSettings { get; }
 
-        public TileObject this[int x, int y] => _gridModel[x, y];
-
-        public void SetTile(TileObject tile, int x, int y)
-        {
-            _gridModel[x, y] = tile;
-        }
+        public TileInstance this[int x, int y] => _gridModel[x, y];
+        
+        public IReadOnlyList<TileInstance> Tiles => _gridModel.Tiles;
 
         public int GridWidth => _gridModel.GridWidth;
         public int GridHeight => _gridModel.GridHeight;
@@ -53,7 +55,7 @@ namespace OldBard.Services.Match3.Grid
         {
             get
             {
-                using(ListPool<TileObject>.Get(out List<TileObject> list))
+                using(ListPool<TileInstance>.Get(out List<TileInstance> list))
                 {
                     return GetFirstPossibleMatch(list);
                 }
@@ -77,8 +79,11 @@ namespace OldBard.Services.Match3.Grid
             _gridMatchesHelper = new GridMatchesHelper(this, variations, randomSeed);
             _gridMatchesValidator = new GridMatchesValidator(width, height);
 
+            _gridOffset = new Vector3(-((GridWidth - 1) * 0.5f), -((GridHeight - 1) * 0.5f), 0f);
             _tilesVariations = variations;
             _random = new Random(randomSeed);
+
+            CreateTiles();
         }
 
         public string DebugGrid()
@@ -91,94 +96,138 @@ namespace OldBard.Services.Match3.Grid
         /// <summary>
         /// Fills up the grid with tiles
         /// </summary>
-        public List<TileObject> ShuffleGrid()
+        /// <returns>A List with the TileObjects</returns>
+        void CreateTiles()
         {
-            return _gridMatchesHelper.ShuffleGrid();
+            for (var y = GridHeight - 1; y >= 0; y--)
+            {
+                for (var x = 0; x < GridWidth; x++)
+                {
+                    GetNewTile(x, y);
+                }
+            }
+            
+            // Makes sure the game does not start already with matches
+            RemoveMatches();
+        }
+
+        TileInstance GetNewTile(int x, int y)
+        {
+            TileInstance tileInstance = TileInstanceFactory.Instance.GetNewTile(x, y, _gridOffset);
+
+            SetNewTile(tileInstance, x, y);
+
+            return tileInstance;
+        }
+
+        public void RemoveMatches()
+        {
+            using(ListPool<TileInstance>.Get(out List<TileInstance> matches))
+            {
+                while(_gridMatchesHelper.TryGetMatches(matches))
+                {
+                    ShuffleMatches(matches);
+
+                    matches.Clear();
+                }
+            }
+        }
+
+        public void SetNewTile(TileInstance tile, int x, int y)
+        {
+            tile.SetTileType((TileType)_random.Next(0, _tilesVariations));
+            SetTile(tile, x, y);
+        }
+
+        public void SetTile(TileInstance tile, int x, int y)
+        {
+            _gridModel[x, y] = tile;
+        }
+
+        /// <summary>
+        /// Goes through the grid making sure that there are no matches already
+        /// </summary>
+        void ShuffleMatches(List<TileInstance> matches)
+        {
+            foreach(TileInstance tileInstance in matches)
+            {
+                tileInstance.SetTileType((TileType) _random.Next(0, _tilesVariations));
+            }
         }
 
         /// <summary>
         /// Moves the tiles down to occupy the positions left by destroyed tiles
         /// </summary>
-        /// <returns>A List with the TileObjects</returns>
-        public void MoveTilesDown(List<TileObject> tilesToUpdateView)
+        public void MoveTilesDown(List<TileInstance> tilesToUpdateView)
         {
-            ListPool<TileObject>.Get(out List<TileObject> tiles);
-            
             for(var x = 0; x < _gridModel.GridWidth; x++)
             {
                 for(var y = 0; y < _gridModel.GridHeight; y++)
                 {
-                    TileObject tile = _gridModel[x, y];
+                    TileInstance tile = _gridModel[x, y];
 
-                    if(tile.Valid)
+                    if(tile.IsValid)
                     {
                         continue;
                     }
-
-                    // Gets an invalid tile
-
+                    
                     // Gets the first tile above the current one
-                    TileObject upTile = _gridModel.GetTileUp(x, y + 1);
+                    TileInstance upTile = _gridModel.GetTileUp(x, y + 1);
 
                     // if there are none, create it. Else swaps with the invalid one. Sending it up
                     // while bringing down the valid
                     if(upTile == null)
                     {
-                        tile.TileType = (TileType) _random.Next(0, _tilesVariations);
-
-                        tiles.Clear();
-                        _gridMatchesHelper.FillMatchedContiguousTiles(tile, ref tiles);
-
-                        tile.Valid = true;
-                        tilesToUpdateView.Add(tile);
+                        upTile = GetNewTile(x, y);
                     }
                     else
                     {
+                        upTile.TileView.TargetPosition = tile.TileView.Position;
+                        tile.TileView.Position = upTile.TileView.Position;
                         _gridModel.SwapTilesPos(tile, upTile);
-                        tilesToUpdateView.Add(upTile);
                     }
+
+                    tilesToUpdateView.Add(upTile);
                 }
             }
-            
-            ListPool<TileObject>.Release(tiles);
 
             // Makes sure we have possible matches. If not, refresh the grid
             if(!HasPossibleMatch)
             {
-                tilesToUpdateView.AddRange(_gridMatchesHelper.CreatePossibleMatch());
+                _gridMatchesHelper.CreatePossibleMatch(tilesToUpdateView);
             }
         }
-
+        
         /// GridAccess
-
-        public bool GetFirstPossibleMatch(List<TileObject> tiles)
+        
+        public bool GetFirstPossibleMatch(List<TileInstance> tiles)
         {
-            return _gridMatchesValidator.GetPreMatch(_gridModel.Tiles, tiles);
+            return _gridMatchesValidator.GetPreMatch(Tiles, tiles);
         }
 
-        public TileObject GetNeighbourTile(TileObject tile, DragDirection dir)
+        public TileInstance GetNeighbourTile(TileInstance tile, DragDirection dir)
         {
             return _gridModel.GetNeighbourTile(tile, dir);
         }
 
         /// Detection
-
         /// <summary>
         /// Tries to swap the given tiles and find a match
         /// </summary>
         /// <param name="tile1">Tile to be swapped</param>
         /// <param name="tile2">Tile to be swapped</param>
-        /// <returns>A List with the TileObjects</returns>
-        public bool TrySwapTiles(TileObject tile1, TileObject tile2, List<TileObject> tiles)
+        /// <param name="tiles"></param>
+        /// <returns>Return whether the swap resulted in a match</returns>
+        public bool TrySwapTiles(TileInstance tile1, TileInstance tile2, List<TileInstance> tiles)
         {
             _gridModel.SwapTilesPos(tile1, tile2);
 
-            _gridMatchesHelper.FillMatchedContiguousTiles(tile1, ref tiles);
-            _gridMatchesHelper.FillMatchedContiguousTiles(tile2, ref tiles);
+            _gridMatchesHelper.FillMatchedContiguousTiles(tile1, tiles);
+            _gridMatchesHelper.FillMatchedContiguousTiles(tile2, tiles);
 
             if(tiles.Count > 1)
             {
-                ProcessMatches(tiles);
+                InvalidateTiles(tiles);
             }
             else
             {
@@ -192,11 +241,26 @@ namespace OldBard.Services.Match3.Grid
         /// Processes the matches in the given <paramref name="matchedTiles"/>
         /// </summary>
         /// <param name="matchedTiles">A List with the TileObjects</param>
-        void ProcessMatches(List<TileObject> matchedTiles)
+        public void ReleaseTiles(List<TileInstance> matchedTiles)
         {
-            foreach (var tileObject in matchedTiles)
+            Debug.LogWarning("Releasing Tiles");
+            foreach (TileInstance tileInstance in matchedTiles)
             {
-                tileObject.Valid = false;
+                tileInstance.IsValid = false;
+                TileInstanceFactory.Instance.ReleaseTileInstance(tileInstance);
+            }
+        }
+
+        /// <summary>
+        /// Processes the matches in the given <paramref name="matchedTiles"/>
+        /// </summary>
+        /// <param name="matchedTiles">A List with the TileObjects</param>
+        public void InvalidateTiles(List<TileInstance> matchedTiles)
+        {
+            Debug.LogWarning("Invalidating Tiles");
+            foreach (TileInstance tileInstance in matchedTiles)
+            {
+                tileInstance.IsValid = false;
             }
         }
         
@@ -204,16 +268,9 @@ namespace OldBard.Services.Match3.Grid
         /// Finds and processes matches in the grid
         /// </summary>
         /// <returns>A List with the TileObjects</returns>
-        public List<TileObject> FindAndProcessMatches()
+        public bool TryFindAndProcessMatches(List<TileInstance> matches)
         {
-            List<TileObject> matches = _gridMatchesHelper.GetMatches();
-
-            if(matches.Count > 1)
-            {
-                ProcessMatches(matches);
-            }
-
-            return matches;
+            return _gridMatchesHelper.TryGetMatches(matches);
         }
 
         /// <summary>

@@ -8,9 +8,9 @@ namespace OldBard.Services.Match3.Grid
 
         string DebugGrid();
 
-        TileObject this[int x, int y] { get; }
+        TileInstance this[int x, int y] { get; }
 
-        void SetTile(TileObject tile, int x, int y);
+        void SetTile(TileInstance tile, int x, int y);
 
         int GridWidth { get; }
         int GridHeight { get; }

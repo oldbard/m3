@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OldBard.Services.Match3.Grid;
 using TMPro;
 using UnityEngine;
 
@@ -23,7 +24,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// </summary>
         /// <param name="tiles">List of Tiles to animate</param>
         /// <param name="totalTime">Duration of the animation</param>
-        public async Task PlayTilesPositionAnim(List<TileInstance> tiles, float totalTime)
+        public async Task PlayTilesPositionAnim(IReadOnlyList<TileInstance> tiles, float totalTime)
         {
             await PlayTilesAnim(tiles, AnimateTilePosition, totalTime);
         }
@@ -67,7 +68,7 @@ namespace OldBard.Match3.Gameplay.Views.Animations
         /// <param name="tiles">List of Tiles to animate</param>
         /// <param name="animationCall">Action to call at every frame</param>
         /// <param name="totalTime">Duration of the animation</param>
-        async Task PlayTilesAnim(List<TileInstance> tiles,
+        async Task PlayTilesAnim(IReadOnlyList<TileInstance> tiles,
             Action<TileInstance, float, float> animationCall,
             float totalTime)
         {

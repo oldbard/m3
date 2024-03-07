@@ -75,6 +75,8 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// </summary>
         void OnDestroy()
         {
+            TileInstanceFactory.Instance.Terminate();
+
             _gameIsRunning = false;
 
             UnregisterEvents();
@@ -90,15 +92,25 @@ namespace OldBard.Match3.Gameplay.Controllers
         {
             _inputManager.DisableInput();
 
-            _initialDuration = PlayerPrefs.GetInt(MATCH_DURATION_KEY, _gameConfig.GameDuration);
+            _initialDuration = PlayerPrefs.GetInt(MATCH_DURATION_KEY, _config.GameDuration);
 
-            _animationsController = new AnimationsController(_gameConfig.LerpAnimationCurve);
+            _animationsController = new AnimationsController(_config.LerpAnimationCurve);
 
             _timeLeft = _initialDuration;
+            
+            // Gets the configuration. Loads the data from the PlayerPrefs. Uses the
+            // information in the config as default.
+            var width = PlayerPrefs.GetInt(GRID_WIDTH_KEY, _gridSettings.DefaultGridWidth);
+            var height = PlayerPrefs.GetInt(GRID_HEIGHT_KEY, _gridSettings.DefaultGridHeight);
+            var variations = PlayerPrefs.GetInt(TILES_VARIATIONS_KEY, _config.NumberOfTileTypes);
+
+            var variation = Random.Range(0, _config.TilesVariations);
+
+            TileInstanceFactory.Instance.Initialize(_config, _gridSettings, _tilesParent, variation, width * height);
 
             InitHUD();
 
-            await InitGrid();
+            await InitGrid(width, height, variations);
 
             RegisterEvents();
 
@@ -126,21 +138,13 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// <summary>
         /// Initializes the Grid. Both Logic and View
         /// </summary>
-        async Task InitGrid()
+        async Task InitGrid(int width, int height, int variations)
         {
-            // Gets the configuration. Loads the data from the PlayerPrefs. Uses the
-            // information in the config as default.
-            var width = PlayerPrefs.GetInt(GRID_WIDTH_KEY, _gridSettings.DefaultGridWidth);
-            var height = PlayerPrefs.GetInt(GRID_HEIGHT_KEY, _gridSettings.DefaultGridHeight);
-            var variations = PlayerPrefs.GetInt(TILES_VARIATIONS_KEY, _gameConfig.NumberOfTileTypes);
-            
             _gridService = new GridService(_gridSettings, width, height, variations, System.DateTime.UtcNow.Millisecond);
 
-            _gridView.Initialize(_gameConfig, _gridService, _animationsController);
-            
-            // Gets the tiles data created by the GridManager and sends it to be shown in the view
-            List<TileObject> tiles = _gridService.ShuffleGrid();
-            await _gridView.PlayTilesDropAnim(tiles);
+            _gridView.Initialize(_config, _gridService, _animationsController);
+
+            await _gridView.PlayTilesDropAnim(_gridService.Tiles);
         }
 
         /// <summary>
@@ -186,7 +190,7 @@ namespace OldBard.Match3.Gameplay.Controllers
 
             // Checks if the game is running, if the player can interact and if a
             // given amount of time has passed. If so, shows a hint to the player
-            if(!_inputManager.CanDrag || (_inputManager.TimeSinceLastInteraction < _gameConfig.TimeToShowHint - 1))
+            if(!_inputManager.CanDrag || (_inputManager.TimeSinceLastInteraction < _config.TimeToShowHint - 1))
             {
                 return;
             }
@@ -244,13 +248,13 @@ namespace OldBard.Match3.Gameplay.Controllers
             Vector3 diff = curPos - initialDragPos;
 
             // If the player dragged enough, process the input
-            if(!(diff.sqrMagnitude >= _gameConfig.DragDetectionThreshold * _gameConfig.DragDetectionThreshold))
+            if(!(diff.sqrMagnitude >= _config.DragDetectionThreshold * _config.DragDetectionThreshold))
             {
                 return;
             }
 
             // Gets the tile that is being dragged
-            TileObject pickedTile = _gridView.GetTileAt(initialDragPos);
+            TileInstance pickedTile = _gridView.GetTileAt(initialDragPos);
 
             // Dragged outside the board
             if(pickedTile == null)
@@ -260,7 +264,7 @@ namespace OldBard.Match3.Gameplay.Controllers
 
             // Gets the neighbour tile based on the direction of the drag
             GridService.DragDirection dir = GetDirection(diff.normalized);
-            TileObject neighbour = _gridService.GetNeighbourTile(pickedTile, dir);
+            TileInstance neighbour = _gridService.GetNeighbourTile(pickedTile, dir);
 
             // Dragged in a bad direction
             if(neighbour == null)
@@ -280,7 +284,7 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// </summary>
         /// <param name="tile1">Tile to swap position</param>
         /// <param name="tile2">Tile to swap position</param>
-        async void DoSwapAnims(TileObject tile1, TileObject tile2)
+        async void DoSwapAnims(TileInstance tile1, TileInstance tile2)
         {
             // Plays an audio specific to the swapping
             _audioService.PlaySwapClip();
@@ -288,7 +292,7 @@ namespace OldBard.Match3.Gameplay.Controllers
             // Plays the swap animation and waits for it to end
             await _gridView.PlaySwapAnim(tile1, tile2);
 
-            using(ListPool<TileObject>.Get(out List<TileObject> tiles))
+            using(ListPool<TileInstance>.Get(out List<TileInstance> tiles))
             {
                 // Tries to swap the tiles in the logic and get the affected tiles (matches)
                 if(_gridService.TrySwapTiles(tile1, tile2, tiles))
@@ -311,9 +315,9 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// Processes the list of matched tiles
         /// </summary>
         /// <param name="tiles">List of matched tiles</param>
-        async Task ProcessMatches(List<TileObject> tiles)
+        async Task ProcessMatches(List<TileInstance> tiles)
         {
-            ListPool<TileObject>.Get(out List<TileObject> tilesToUpdateView);
+            ListPool<TileInstance>.Get(out List<TileInstance> tilesToUpdateView);
 
             // As we remove the matched tiles and have new ones coming, we may
             // find new matches which needs to be processed. So we keep on
@@ -321,26 +325,31 @@ namespace OldBard.Match3.Gameplay.Controllers
             while(tiles.Count > 0)
             {
                 // Calculates the player score
-                Score += tiles.Count * _gameConfig.PointsPerTile;
+                Score += tiles.Count * _config.PointsPerTile;
 
                 // Play a sound for the match and destruction
                 _audioService.PlayMatchClip();
                 
+                _gridService.InvalidateTiles(tiles);
+
                 // Waits for the matched tiles destruction animation to end.
                 await _gridView.PlayHideTilesAnim(tiles);
 
                 // Moves the tiles down. Gets a list of all the involved tiles from the manager
                 tilesToUpdateView.Clear();
                 _gridService.MoveTilesDown(tilesToUpdateView);
+                
+                _gridService.ReleaseTiles(tiles);
 
                 // Shows in the view the movement of the tiles and placement of new ones
                 await _gridView.PlayTilesDropAnim(tilesToUpdateView);
 
                 // Checks if we have more tiles to process because of the cascading
-                tiles = _gridService.FindAndProcessMatches();
+                tiles.Clear();
+                _gridService.TryFindAndProcessMatches(tiles);
             }
             
-            ListPool<TileObject>.Release(tilesToUpdateView);
+            ListPool<TileInstance>.Release(tilesToUpdateView);
             
             var gmDebug = _gridService.DebugGrid();
             var gvDebug = _gridView.DebugGrid();
