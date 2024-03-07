@@ -1948,13 +1948,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b291d2a927eeb114d9a9b7e4904c11ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gameConfig: {fileID: 11400000, guid: 58e461235d1fb734585d76fd87ac78a2, type: 2}
+  _config: {fileID: 11400000, guid: 58e461235d1fb734585d76fd87ac78a2, type: 2}
   _gridSettings: {fileID: 11400000, guid: 5c4458c3ddd17864991a29c56e2aa523, type: 2}
   _gridView: {fileID: 1276745635}
   _gameUIController: {fileID: 487677213}
   _inputManager: {fileID: 1276745637}
   _audioSettings: {fileID: 11400000, guid: bf8a7b17b3ac5eb41998fe8cc5e663b9, type: 2}
   _audioService: {fileID: 487677216}
+  _tilesParent: {fileID: 1870389110}
 --- !u!1 &1525985897
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using OldBard.Match3.Config;
 using OldBard.Match3.Gameplay.Views.Animations;
 using OldBard.Services.Match3.Grid;
 using OldBard.Services.Match3.Grid.Data;
 using OldBard.Services.Match3.Grid.Views;
 using UnityEngine;
 using UnityEngine.Pool;
-using Random = UnityEngine.Random;
 
 namespace OldBard.Match3.Gameplay.Views
 {
@@ -18,13 +16,10 @@ namespace OldBard.Match3.Gameplay.Views
     {
         /// Declarations
 
-        const int TILE_Z_POS = -2;
-
-        [SerializeField] Transform _tilesParent;
         [SerializeField] SpriteRenderer _tilesBackground;
         [SerializeField] BoxCollider2D _tilesBackgroundCollider;
 
-        GameConfig _gameConfig;
+        GridConfig _config;
         GridService _gridService;
         AnimationsController _animationsController;
         Camera _camera;
@@ -54,12 +49,12 @@ namespace OldBard.Match3.Gameplay.Views
         /// <summary>
         /// Initializes the Grid View
         /// </summary>
-        /// <param name="gameConfig">The Game Config</param>
+        /// <param name="gridConfig">The Game Config</param>
         /// <param name="gridService">The Grid Manager</param>
         /// <param name="animationsController"></param>
-        public void Initialize(GameConfig gameConfig, GridService gridService, AnimationsController animationsController)
+        public void Initialize(GridConfig gridConfig, GridService gridService, AnimationsController animationsController)
         {
-            _gameConfig = gameConfig;
+            _config = gridConfig;
             _gridService = gridService;
             _animationsController = animationsController;
             _camera = Camera.main;

@@ -1,7 +1,7 @@
-﻿using OldBard.Match3.Config;
-using OldBard.Match3.Gameplay.Views.Animations;
+﻿using OldBard.Match3.Gameplay.Views.Animations;
 using System;
 using System.Threading.Tasks;
+using OldBard.Services.Match3.Grid.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,7 +18,7 @@ namespace OldBard.Match3.Gameplay.Views.UI
         [SerializeField] TextMeshProUGUI _highScore;
         [SerializeField] GameOverScreenController _gameOverController;
 
-        GameConfig _config;
+        GridConfig _config;
         AnimationsController _animationsController;
 
         public Action ShowHint;
@@ -26,7 +26,7 @@ namespace OldBard.Match3.Gameplay.Views.UI
 
         bool _timerIsBlinking;
 
-        public void Init(GameConfig config, AnimationsController animationsController)
+        public void Init(GridConfig config, AnimationsController animationsController)
         {
             _config = config;
             _animationsController = animationsController;

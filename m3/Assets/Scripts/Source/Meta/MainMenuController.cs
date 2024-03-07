@@ -1,6 +1,6 @@
-﻿using OldBard.Match3.Config;
-using OldBard.Services.Match3.Grid;
+﻿using OldBard.Services.Match3.Grid;
 using System;
+using OldBard.Services.Match3.Grid.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,7 +19,7 @@ namespace OldBard.Match3.Meta
         const string MatchDurationKey = "MatchDuration";
         const string HighScoreKey = "HighScore";
 
-        [SerializeField] GameConfig _gameConfig;
+        [SerializeField] GridConfig _config;
         [SerializeField] GridSettings _gridSettings;
         
         [SerializeField] Slider _widthSlider;
@@ -40,9 +40,9 @@ namespace OldBard.Match3.Meta
             OnChangeWidth(_widthSlider.value);
             _heightSlider.value = PlayerPrefs.GetInt(GridHeightKey, _gridSettings.DefaultGridHeight);
             OnChangeHeight(_heightSlider.value);
-            _variationsSlider.value = PlayerPrefs.GetInt(TilesVariationsKey, _gameConfig.NumberOfTileTypes);
+            _variationsSlider.value = PlayerPrefs.GetInt(TilesVariationsKey, _config.NumberOfTileTypes);
             OnChangeVariations(_variationsSlider.value);
-            _durationSlider.value = PlayerPrefs.GetInt(MatchDurationKey, _gameConfig.GameDuration);
+            _durationSlider.value = PlayerPrefs.GetInt(MatchDurationKey, _config.GameDuration);
             OnChangeDuration(_durationSlider.value);
             
             _highScoreText.text = $"High Score: {PlayerPrefs.GetInt(HighScoreKey, 0)}";
@@ -69,7 +69,7 @@ namespace OldBard.Match3.Meta
         public void OnChangeDuration(Single duration)
         {
             PlayerPrefs.SetInt(MatchDurationKey, (int)duration);
-            var timeSpan = TimeSpan.FromSeconds(duration);
+            TimeSpan timeSpan = TimeSpan.FromSeconds(duration);
             _durationText.text = $"Match Duration: {timeSpan:mm':'ss}";
         }
 

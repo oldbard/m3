@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using OldBard.Match3.Config;
 using OldBard.Match3.Gameplay.Views;
 using OldBard.Match3.Gameplay.Views.Animations;
 using OldBard.Match3.Gameplay.Views.UI;
 using OldBard.Services.Match3.Audio;
 using OldBard.Services.Match3.Grid;
+using OldBard.Services.Match3.Grid.Data;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -24,13 +24,14 @@ namespace OldBard.Match3.Gameplay.Controllers
         const string TILES_VARIATIONS_KEY = "TilesVariations";
         const string MATCH_DURATION_KEY = "MatchDuration";
 
-        [SerializeField] GameConfig _gameConfig;
+        [SerializeField] GridConfig _config;
         [SerializeField] GridSettings _gridSettings;
         [SerializeField] GridViewController _gridView;
         [SerializeField] GameUIController _gameUIController;
         [SerializeField] InputManager _inputManager;
         [SerializeField] Services.Match3.Audio.AudioSettings _audioSettings;
         [SerializeField] AudioService _audioService;
+        [SerializeField] Transform _tilesParent;
 
         GridService _gridService;
         AnimationsController _animationsController;
@@ -113,7 +114,7 @@ namespace OldBard.Match3.Gameplay.Controllers
         {
             _gameUIController.UpdateScore(0);
 
-            _gameUIController.Init(_gameConfig, _animationsController);
+            _gameUIController.Init(_config, _animationsController);
             _audioService.InitSound(_audioSettings);
 
             var highScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY, 0);
