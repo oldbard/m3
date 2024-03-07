@@ -12,7 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4297fffd36e3e68429e4a9c367cb3512, type: 3}
   m_Name: GridSettings
   m_EditorClassIdentifier: 
+  _defaultGridWidth: 8
+  _defaultGridHeight: 8
+  _tileViewWidth: 1
+  _tileViewHeight: 1
+  _yCascadePositionOffset: 10
   DefaultGridWidth: 8
   DefaultGridHeight: 8
   TileViewWidth: 1
   TileViewHeight: 1
+  YCascadePositionOffset: 0

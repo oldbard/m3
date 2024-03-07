@@ -12,41 +12,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a323ec351a560744eb9bb5fd396969e6, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: 
-  DragDetectionThreshold: 10
-  DropAnimationTime: 0.5
-  SwapAnimationTime: 0.5
-  DestroyAnimationTime: 0.5
-  HintAnimationTime: 0.5
-  TimeToShowHint: 10
-  HintCycles: 3
-  GameDuration: 20
-  TimeToShowWarning: 5
-  StartBlinkDelay: 500
-  FullColorBlinkDelay: 200
-  PointsPerTile: 10
-  TileBackgroundPrefab: {fileID: 160020, guid: 561c8e1f04bbfa849a1538301dbab6a3, type: 3}
-  TilePrefab: {fileID: -2503264257950215645, guid: 1c9841a63fe5697459d56dde4153f031,
+  _dragDetectionThreshold: 10
+  _dropAnimationTime: 0.5
+  _swapAnimationTime: 0.5
+  _destroyAnimationTime: 0.5
+  _hintAnimationTime: 0.5
+  _timeToShowHint: 10
+  _hintCycles: 3
+  _gameDuration: 20
+  _timeToShowWarning: 5
+  _startBlinkDelay: 500
+  _fullColorBlinkDelay: 200
+  _pointsPerTile: 10
+  _tileBackgroundPrefab: {fileID: 160020, guid: 561c8e1f04bbfa849a1538301dbab6a3,
     type: 3}
-  TilesVariations: 2
-  _bgms:
-  - {fileID: 8300000, guid: 62bdfb8ea2338034a86638fd407a9251, type: 3}
-  - {fileID: 8300000, guid: 04f95ddf886752448bbf6f6e35fa756f, type: 3}
-  - {fileID: 8300000, guid: 080063285cbebc54c889476ded654183, type: 3}
-  - {fileID: 8300000, guid: e2b8e48b56586054a88cc64ed099a61f, type: 3}
-  GameOverSound: {fileID: 8300000, guid: cf3291b7346dd604dbfa69186adc9540, type: 3}
-  GameOverHighScoreSound: {fileID: 8300000, guid: 63354c465446f964d822e667fe255f02,
+  _tilePrefab: {fileID: -2503264257950215645, guid: 1c9841a63fe5697459d56dde4153f031,
     type: 3}
-  SwapSound: {fileID: 8300000, guid: 1585b9aa087e8a34199490fa2b7a6a13, type: 3}
-  MatchSound: {fileID: 8300000, guid: fb41515088093714c8a1f11dd0f7c069, type: 3}
-  TimeoutSound: {fileID: 8300000, guid: 7cd61d5db60ec204e9d73d42d5bfd41b, type: 3}
-  LerpAnimationCurve:
+  _tilesVariations: 2
+  _lerpAnimationCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 2
-      outSlope: 2
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -54,8 +44,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 0
-      outSlope: 0
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0

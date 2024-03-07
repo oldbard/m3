@@ -3,7 +3,7 @@
 namespace OldBard.Services.Match3.Grid
 {
     /// <summary>
-    /// TileObject model data.
+    /// TileData model data.
     /// </summary>
     [Serializable]
     public class TileObject
