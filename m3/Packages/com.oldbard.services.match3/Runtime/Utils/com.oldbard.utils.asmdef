@@ -1,6 +1,6 @@
 {
-  "name": "com.oldbard.utils",
-  "rootNamespace": "OldBard.Utils",
+  "name": "com.oldbard.services.utils",
+  "rootNamespace": "OldBard.Services.Utils",
   "references": [
 	"Unity.TextMeshPro",
 	"Unity"

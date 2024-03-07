@@ -6,8 +6,8 @@ namespace OldBard.Services.Match3.Grid.Data
     /// <summary>
     /// Game Configuration
     /// </summary>
-    [CreateAssetMenu(fileName = "Config", menuName = "M3/Config", order = 1)]
-    public class GridConfig : ScriptableObject
+    [CreateAssetMenu(fileName = "GameConfig", menuName = "M3/GameConfig", order = 1)]
+    public class GameConfig : ScriptableObject
     {
         [Header("Input")]
         [SerializeField] float _dragDetectionThreshold = 10f;

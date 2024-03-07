@@ -1,10 +1,14 @@
-﻿using OldBard.Services.Match3.Grid.Data;
+﻿using OldBard.Services.Match3.Grid;
+using OldBard.Services.Match3.Grid.Data;
 using OldBard.Services.Match3.Grid.Views;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace OldBard.Services.Match3.Grid
+namespace OldBard.Services.Match3.Factories
 {
+	/// <summary>
+	/// Factory to generate TileInstance objects. Uses Unity's IObjectPool to handle the instances.
+	/// </summary>
 	public class TileInstanceFactory
 	{
 		const string GRID_HEIGHT_KEY = "GridHeight";
@@ -13,8 +17,8 @@ namespace OldBard.Services.Match3.Grid
 		
 		public static TileInstanceFactory Instance => s_instance ??= new TileInstanceFactory();
 		
-		GridConfig _config;
-		GridSettings _gridSettings;
+		GameConfig _config;
+		GridConfig _gridConfig;
 		int _variation;
 		int _gridHeight;
 
@@ -22,32 +26,59 @@ namespace OldBard.Services.Match3.Grid
 		
 		IObjectPool<TileInstance> _tilesPool;
 
-		public void Initialize(GridConfig config, GridSettings gridSettings, Transform poolParentTransform, int variation, int initialSize)
+		/// <summary>
+		/// Initialization call to set up some configs and parameters
+		/// </summary>
+		/// <param name="config">Game Config</param>
+		/// <param name="gridConfig">Grid Settings</param>
+		/// <param name="poolParentTransform">Transform which will hold the TileInstances</param>
+		/// <param name="variation">Chosen tiles visual variation</param>
+		/// <param name="initialSize">Pool initial size</param>
+		public void Initialize(GameConfig config, GridConfig gridConfig, Transform poolParentTransform, int variation, int initialSize)
 		{
 			_config = config;
-			_gridSettings = gridSettings;
+			_gridConfig = gridConfig;
 			_variation = variation;
 
-			_gridHeight = PlayerPrefs.GetInt(GRID_HEIGHT_KEY, _gridSettings.DefaultGridHeight);
+			_gridHeight = PlayerPrefs.GetInt(GRID_HEIGHT_KEY, _gridConfig.DefaultGridHeight);
 
 			_poolParentTransform = poolParentTransform;
 
 			_tilesPool = new ObjectPool<TileInstance>(OnCreateTileInstance, OnGetTileInstance, OnReleaseTileInstance, OnDestroyTileInstance, false, initialSize);
 		}
 
+		/// <summary>
+		/// Clears the Pool
+		/// </summary>
 		public void Terminate()
 		{
 			_tilesPool.Clear();
 			_tilesPool = null;
 		}
 
+		/// <summary>
+		/// Gets a TileInstance instance from the Pool
+		/// </summary>
+		/// <param name="x">X Position</param>
+		/// <param name="y">Y Position</param>
+		/// <param name="gridOffset">Grid Offset</param>
+		/// <returns></returns>
 		public TileInstance GetNewTile(int x, int y, Vector3 gridOffset)
 		{
 			TileInstance tileInstance = GetTileInstance();
-			tileInstance.Configure(x, y, _gridSettings.TileViewWidth, _gridSettings.TileViewHeight,
-				_gridHeight + _gridSettings.YCascadePositionOffset, gridOffset);
+			tileInstance.Configure(x, y, _gridConfig.TileViewWidth, _gridConfig.TileViewHeight,
+				_gridHeight + _gridConfig.YCascadePositionOffset, gridOffset);
 
 			return tileInstance;
+		}
+
+		/// <summary>
+		/// Releases a TileInstance object
+		/// </summary>
+		/// <param name="tileInstance">The instance to be released into the Pool</param>
+		public void ReleaseTileInstance(TileInstance tileInstance)
+		{
+			_tilesPool.Release(tileInstance);
 		}
 
 		TileInstance GetTileInstance()
@@ -56,11 +87,6 @@ namespace OldBard.Services.Match3.Grid
 			tileInstance.TileView.Initialize(_config, _variation);
 
 			return tileInstance;
-		}
-
-		public void ReleaseTileInstance(TileInstance tileInstance)
-		{
-			_tilesPool.Release(tileInstance);
 		}
 
 		TileInstance OnCreateTileInstance()

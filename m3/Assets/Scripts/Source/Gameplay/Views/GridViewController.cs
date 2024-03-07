@@ -19,8 +19,8 @@ namespace OldBard.Match3.Gameplay.Views
         [SerializeField] SpriteRenderer _tilesBackground;
         [SerializeField] BoxCollider2D _tilesBackgroundCollider;
 
-        GridConfig _config;
-        GridService _gridService;
+        GameConfig _config;
+        IGridService _gridService;
         AnimationsController _animationsController;
         Camera _camera;
 
@@ -38,12 +38,12 @@ namespace OldBard.Match3.Gameplay.Views
         /// <summary>
         /// Initializes the Grid View
         /// </summary>
-        /// <param name="gridConfig">The Game Config</param>
+        /// <param name="gameConfig">The Game Config</param>
         /// <param name="gridService">The Grid Manager</param>
         /// <param name="animationsController"></param>
-        public void Initialize(GridConfig gridConfig, GridService gridService, AnimationsController animationsController)
+        public void Initialize(GameConfig gameConfig, IGridService gridService, AnimationsController animationsController)
         {
-            _config = gridConfig;
+            _config = gameConfig;
             _gridService = gridService;
             _animationsController = animationsController;
             _camera = Camera.main;
@@ -84,8 +84,8 @@ namespace OldBard.Match3.Gameplay.Views
             Vector3 worldPos = _camera.ScreenToWorldPoint(pos);
             
             // Calculates the column and row based on the given position and tiles sizes
-            var x = Mathf.RoundToInt((worldPos.x - _gridService.GridOffset.x) / _gridService.GridSettings.TileViewWidth);
-            var y = Mathf.RoundToInt((worldPos.y - _gridService.GridOffset.y) / _gridService.GridSettings.TileViewHeight);
+            var x = Mathf.RoundToInt((worldPos.x - _gridService.GridOffset.x) / _gridService.GridConfig.TileViewWidth);
+            var y = Mathf.RoundToInt((worldPos.y - _gridService.GridOffset.y) / _gridService.GridConfig.TileViewHeight);
             
             return this[x, y];
         }

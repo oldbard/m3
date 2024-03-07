@@ -11,7 +11,7 @@ namespace OldBard.Match3.Gameplay.Controllers
         Vector3 _initialDragPos = Vector3.negativeInfinity;
         DateTime _lastInteractionTime;
 
-        public Action<Vector3, Vector3> Dragged;
+        public event Action<Vector3, Vector3> Dragged;
 
         #region Interactions
 

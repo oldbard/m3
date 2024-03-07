@@ -18,7 +18,7 @@ namespace OldBard.Match3.Gameplay.Views.UI
         [SerializeField] TextMeshProUGUI _highScore;
         [SerializeField] GameOverScreenController _gameOverController;
 
-        GridConfig _config;
+        GameConfig _config;
         AnimationsController _animationsController;
 
         public Action ShowHint;
@@ -26,7 +26,7 @@ namespace OldBard.Match3.Gameplay.Views.UI
 
         bool _timerIsBlinking;
 
-        public void Init(GridConfig config, AnimationsController animationsController)
+        public void Init(GameConfig config, AnimationsController animationsController)
         {
             _config = config;
             _animationsController = animationsController;

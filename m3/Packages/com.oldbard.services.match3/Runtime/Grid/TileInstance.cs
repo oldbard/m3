@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace OldBard.Services.Match3.Grid
 {
+	/// <summary>
+	/// Class which represents a Tile from the grid
+	/// </summary>
 	public class TileInstance
 	{
 		public int PosX { get; set; }

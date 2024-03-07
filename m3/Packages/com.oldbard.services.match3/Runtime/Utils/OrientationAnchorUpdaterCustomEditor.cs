@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace OldBard.Match3.Gameplay.Views
+namespace OldBard.Services.Utils
 {
 	[CustomEditor(typeof(OrientationAnchorUpdater))]
 	public class OrientationAnchorUpdaterCustomEditor : Editor

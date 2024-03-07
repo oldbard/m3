@@ -4,6 +4,7 @@ using OldBard.Match3.Gameplay.Views;
 using OldBard.Match3.Gameplay.Views.Animations;
 using OldBard.Match3.Gameplay.Views.UI;
 using OldBard.Services.Match3.Audio;
+using OldBard.Services.Match3.Factories;
 using OldBard.Services.Match3.Grid;
 using OldBard.Services.Match3.Grid.Data;
 using UnityEngine;
@@ -24,8 +25,8 @@ namespace OldBard.Match3.Gameplay.Controllers
         const string TILES_VARIATIONS_KEY = "TilesVariations";
         const string MATCH_DURATION_KEY = "MatchDuration";
 
-        [SerializeField] GridConfig _config;
-        [SerializeField] GridSettings _gridSettings;
+        [SerializeField] GameConfig _config;
+        [SerializeField] GridConfig _gridConfig;
         [SerializeField] GridViewController _gridView;
         [SerializeField] GameUIController _gameUIController;
         [SerializeField] InputManager _inputManager;
@@ -33,7 +34,7 @@ namespace OldBard.Match3.Gameplay.Controllers
         [SerializeField] AudioService _audioService;
         [SerializeField] Transform _tilesParent;
 
-        GridService _gridService;
+        IGridService _gridService;
         AnimationsController _animationsController;
 
         bool _gameIsRunning;
@@ -100,13 +101,13 @@ namespace OldBard.Match3.Gameplay.Controllers
             
             // Gets the configuration. Loads the data from the PlayerPrefs. Uses the
             // information in the config as default.
-            var width = PlayerPrefs.GetInt(GRID_WIDTH_KEY, _gridSettings.DefaultGridWidth);
-            var height = PlayerPrefs.GetInt(GRID_HEIGHT_KEY, _gridSettings.DefaultGridHeight);
+            var width = PlayerPrefs.GetInt(GRID_WIDTH_KEY, _gridConfig.DefaultGridWidth);
+            var height = PlayerPrefs.GetInt(GRID_HEIGHT_KEY, _gridConfig.DefaultGridHeight);
             var variations = PlayerPrefs.GetInt(TILES_VARIATIONS_KEY, _config.NumberOfTileTypes);
 
             var variation = Random.Range(0, _config.TilesVariations);
 
-            TileInstanceFactory.Instance.Initialize(_config, _gridSettings, _tilesParent, variation, width * height);
+            TileInstanceFactory.Instance.Initialize(_config, _gridConfig, _tilesParent, variation, width * height);
 
             InitHUD();
 
@@ -138,9 +139,12 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// <summary>
         /// Initializes the Grid. Both Logic and View
         /// </summary>
+        /// <param name="width">Grid Width</param>
+        /// <param name="height">Grid Height</param>
+        /// <param name="variations">Tiles Variations</param>
         async Task InitGrid(int width, int height, int variations)
         {
-            _gridService = new GridService(_gridSettings, width, height, variations, System.DateTime.UtcNow.Millisecond);
+            _gridService = new GridService(_gridConfig, width, height, variations, System.DateTime.UtcNow.Millisecond);
 
             _gridView.Initialize(_config, _gridService, _animationsController);
 
@@ -263,7 +267,7 @@ namespace OldBard.Match3.Gameplay.Controllers
             }
 
             // Gets the neighbour tile based on the direction of the drag
-            GridService.DragDirection dir = GetDirection(diff.normalized);
+            DragDirection dir = GetDirection(diff.normalized);
             TileInstance neighbour = _gridService.GetNeighbourTile(pickedTile, dir);
 
             // Dragged in a bad direction
@@ -330,6 +334,7 @@ namespace OldBard.Match3.Gameplay.Controllers
                 // Play a sound for the match and destruction
                 _audioService.PlayMatchClip();
                 
+                // Tags the tiles that were matched
                 _gridService.InvalidateTiles(tiles);
 
                 // Waits for the matched tiles destruction animation to end.
@@ -339,6 +344,7 @@ namespace OldBard.Match3.Gameplay.Controllers
                 tilesToUpdateView.Clear();
                 _gridService.MoveTilesDown(tilesToUpdateView);
                 
+                // Releases the tiles that were matched
                 _gridService.ReleaseTiles(tiles);
 
                 // Shows in the view the movement of the tiles and placement of new ones
@@ -351,6 +357,7 @@ namespace OldBard.Match3.Gameplay.Controllers
             
             ListPool<TileInstance>.Release(tilesToUpdateView);
             
+            // Does some debug comparison in case the view and model desync
             var gmDebug = _gridService.DebugGrid();
             var gvDebug = _gridView.DebugGrid();
 
@@ -377,15 +384,15 @@ namespace OldBard.Match3.Gameplay.Controllers
         /// </summary>
         /// <param name="dir">The direction of the drag vector</param>
         /// <returns>The DragDirection from the Vector</returns>
-        GridService.DragDirection GetDirection(Vector3 dir)
+        DragDirection GetDirection(Vector3 dir)
         {
             // Moved left or right
             if(Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
             {
-                return dir.x > 0 ? GridService.DragDirection.Right : GridService.DragDirection.Left;
+                return dir.x > 0 ? DragDirection.Right : DragDirection.Left;
             }
 
-            return dir.y > 0 ? GridService.DragDirection.Down : GridService.DragDirection.Up;
+            return dir.y > 0 ? DragDirection.Down : DragDirection.Up;
         }
     }
 }

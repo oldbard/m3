@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using OldBard.Services.Match3.Factories;
 using UnityEngine;
 using UnityEngine.Pool;
 using Random = System.Random;
@@ -11,17 +12,6 @@ namespace OldBard.Services.Match3.Grid
     public class GridService : IGridService
     {
         /// Declarations
-
-        /// <summary>
-        /// Enumeration of the possible drag directions
-        /// </summary>
-        public enum DragDirection
-        {
-            Up,
-            Right,
-            Down,
-            Left
-        }
 
         readonly GridModel _gridModel;
         readonly GridMatchesHelper _gridMatchesHelper;
@@ -39,7 +29,7 @@ namespace OldBard.Services.Match3.Grid
         /// <summary>
         /// Settings for the Grid
         /// </summary>
-        public GridSettings GridSettings { get; }
+        public GridConfig GridConfig { get; }
 
         public TileInstance this[int x, int y] => _gridModel[x, y];
         
@@ -51,7 +41,7 @@ namespace OldBard.Services.Match3.Grid
         /// <summary>
         /// Checks if there are any possible matches available
         /// </summary>
-        public bool HasPossibleMatch
+        bool HasPossibleMatch
         {
             get
             {
@@ -66,14 +56,14 @@ namespace OldBard.Services.Match3.Grid
         /// <summary>
         /// Creates a GridManager instance
         /// </summary>
-        /// <param name="gridSettings">Grid Configuration</param>
+        /// <param name="gridConfig">Grid Configuration</param>
         /// <param name="width">Grid width</param>
         /// <param name="height">Grid height</param>
         /// <param name="variations">Amount of tiles variations</param>
         /// <param name="randomSeed">Seed for the random calls</param>
-        public GridService(GridSettings gridSettings, int width, int height, int variations, int randomSeed)
+        public GridService(GridConfig gridConfig, int width, int height, int variations, int randomSeed)
         {
-            GridSettings = gridSettings;
+            GridConfig = gridConfig;
 
             _gridModel = new GridModel(width, height);
             _gridMatchesHelper = new GridMatchesHelper(this, variations, randomSeed);
@@ -96,7 +86,6 @@ namespace OldBard.Services.Match3.Grid
         /// <summary>
         /// Fills up the grid with tiles
         /// </summary>
-        /// <returns>A List with the TileObjects</returns>
         void CreateTiles()
         {
             for (var y = GridHeight - 1; y >= 0; y--)
@@ -120,7 +109,7 @@ namespace OldBard.Services.Match3.Grid
             return tileInstance;
         }
 
-        public void RemoveMatches()
+        void RemoveMatches()
         {
             using(ListPool<TileInstance>.Get(out List<TileInstance> matches))
             {
@@ -133,12 +122,18 @@ namespace OldBard.Services.Match3.Grid
             }
         }
 
-        public void SetNewTile(TileInstance tile, int x, int y)
+        void SetNewTile(TileInstance tile, int x, int y)
         {
             tile.SetTileType((TileType)_random.Next(0, _tilesVariations));
             SetTile(tile, x, y);
         }
 
+        /// <summary>
+        /// Sets the tile Grid Position
+        /// </summary>
+        /// <param name="tile">Tile Instance being set</param>
+        /// <param name="x">X Position</param>
+        /// <param name="y">Y Position</param>
         public void SetTile(TileInstance tile, int x, int y)
         {
             _gridModel[x, y] = tile;
@@ -166,6 +161,7 @@ namespace OldBard.Services.Match3.Grid
                 {
                     TileInstance tile = _gridModel[x, y];
 
+                    // Tries to find an invalid Tile. Invalid tiles are tiles which are about to be removed because they were matched.
                     if(tile.IsValid)
                     {
                         continue;
@@ -182,6 +178,7 @@ namespace OldBard.Services.Match3.Grid
                     }
                     else
                     {
+                        // Inverts the view position so it can be properly dragged down
                         upTile.TileView.TargetPosition = tile.TileView.Position;
                         tile.TileView.Position = upTile.TileView.Position;
                         _gridModel.SwapTilesPos(tile, upTile);
@@ -200,11 +197,22 @@ namespace OldBard.Services.Match3.Grid
         
         /// GridAccess
         
+        /// <summary>
+        /// Gets the first possible match in the Grid
+        /// </summary>
+        /// <param name="tiles">A List with the found TileObjects</param>
+        /// <returns>True if there is a possible match</returns>
         public bool GetFirstPossibleMatch(List<TileInstance> tiles)
         {
             return _gridMatchesValidator.GetPreMatch(Tiles, tiles);
         }
 
+        /// <summary>
+        /// Gets the TileInstance at the dragged direction
+        /// </summary>
+        /// <param name="tile"></param>
+        /// <param name="dir"></param>
+        /// <returns></returns>
         public TileInstance GetNeighbourTile(TileInstance tile, DragDirection dir)
         {
             return _gridModel.GetNeighbourTile(tile, dir);
@@ -216,7 +224,7 @@ namespace OldBard.Services.Match3.Grid
         /// </summary>
         /// <param name="tile1">Tile to be swapped</param>
         /// <param name="tile2">Tile to be swapped</param>
-        /// <param name="tiles"></param>
+        /// <param name="tiles">A List with the found TileObjects</param>
         /// <returns>Return whether the swap resulted in a match</returns>
         public bool TrySwapTiles(TileInstance tile1, TileInstance tile2, List<TileInstance> tiles)
         {
@@ -240,10 +248,9 @@ namespace OldBard.Services.Match3.Grid
         /// <summary>
         /// Processes the matches in the given <paramref name="matchedTiles"/>
         /// </summary>
-        /// <param name="matchedTiles">A List with the TileObjects</param>
+        /// <param name="matchedTiles">A List with the found TileObjects</param>
         public void ReleaseTiles(List<TileInstance> matchedTiles)
         {
-            Debug.LogWarning("Releasing Tiles");
             foreach (TileInstance tileInstance in matchedTiles)
             {
                 tileInstance.IsValid = false;
@@ -257,7 +264,6 @@ namespace OldBard.Services.Match3.Grid
         /// <param name="matchedTiles">A List with the TileObjects</param>
         public void InvalidateTiles(List<TileInstance> matchedTiles)
         {
-            Debug.LogWarning("Invalidating Tiles");
             foreach (TileInstance tileInstance in matchedTiles)
             {
                 tileInstance.IsValid = false;
@@ -267,7 +273,8 @@ namespace OldBard.Services.Match3.Grid
         /// <summary>
         /// Finds and processes matches in the grid
         /// </summary>
-        /// <returns>A List with the TileObjects</returns>
+        /// <param name="matches">List of matched tiles</param>
+        /// <returns>True if there are matches</returns>
         public bool TryFindAndProcessMatches(List<TileInstance> matches)
         {
             return _gridMatchesHelper.TryGetMatches(matches);

@@ -40,7 +40,7 @@ namespace OldBard.Services.Match3.Grid.Views
             set => _transform.localScale = value;
         }
 
-        GridConfig _config;
+        GameConfig _config;
 
         int _variation;
 
@@ -52,7 +52,7 @@ namespace OldBard.Services.Match3.Grid.Views
             _animator.speed = Random.Range(0.8f, 1f);
         }
 
-        public void Initialize(GridConfig config, int variation)
+        public void Initialize(GameConfig config, int variation)
         {
             _config = config;
             

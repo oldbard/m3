@@ -2,6 +2,9 @@
 
 namespace OldBard.Services.Match3.Audio
 {
+    /// <summary>
+    /// Service used to play audios over a single AudioSource
+    /// </summary>
     public class AudioService : MonoBehaviour
     {
         [SerializeField] AudioSource _audioSource;

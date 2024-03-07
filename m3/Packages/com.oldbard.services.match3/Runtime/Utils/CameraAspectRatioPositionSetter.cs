@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace OldBard.Match3.Gameplay.Views
+namespace OldBard.Services.Utils
 {
 	[RequireComponent(typeof(Camera))]
 	public class CameraAspectRatioPositionSetter : MonoBehaviour

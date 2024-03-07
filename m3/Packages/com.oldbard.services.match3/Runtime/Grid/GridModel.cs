@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using static OldBard.Services.Match3.Grid.GridService;
 
 namespace OldBard.Services.Match3.Grid
 {

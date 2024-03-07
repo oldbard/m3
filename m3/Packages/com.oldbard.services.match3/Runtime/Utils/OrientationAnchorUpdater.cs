@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 
-namespace OldBard.Match3.Gameplay.Views
+namespace OldBard.Services.Utils
 {
+    /// <summary>
+    /// Class that changes the anchors based on the orientation
+    /// </summary>
     [RequireComponent(typeof(RectTransform))]
     public class OrientationAnchorUpdater : MonoBehaviour
     {

@@ -2,8 +2,8 @@
 
 namespace OldBard.Services.Match3.Grid
 {
-    [CreateAssetMenu(fileName = "GridSettings", menuName = "M3/GridSettings", order = 1)]
-    public class GridSettings : ScriptableObject
+    [CreateAssetMenu(fileName = "GridConfig", menuName = "M3/GridConfig", order = 1)]
+    public class GridConfig : ScriptableObject
     {
         [Header("Grid")]
         [SerializeField] int _defaultGridWidth;
