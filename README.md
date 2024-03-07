@@ -18,12 +18,8 @@ https://assetstore.unity.com/packages/audio/music/casual-puzzle-world-sounds-fre
 
 # TODO
 
-Make sure the async loops are stoppable
-
 Reset alpha from hints
-
-Bitmask detection
 
 VFX
 
-Maybe separate the match detection from the grid
+Add Unit Tests
