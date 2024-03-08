@@ -18,8 +18,15 @@ https://assetstore.unity.com/packages/audio/music/casual-puzzle-world-sounds-fre
 
 # TODO
 
-Reset alpha from hints
+- Reset alpha from hints
+- Split Game config into smaller focused configs
+- Make the patterns more data driven instead of using constants
+- Create providers for the grid data and pre matches
+- VFX
+- Add Unit Tests
+- Improve / implement proper services
 
-VFX
+# QA
 
-Add Unit Tests
+Why am I not using MVP, MVC, MVVM for UI and some dependency injection for the services (Extenject, VContainer, etc)?
+- The idea of this project is to have something small which was quick to implement. It took me 2 days for the initial implementation and then 2 extra days to refactor it using assemblies. It is not intended to become a complex full game implementation, but a sample.
