@@ -1,4 +1,4 @@
-﻿using OldBard.Services.Match3.Grid.Views;
+﻿using OldBard.Services.Match3.Grid.View;
 using UnityEngine;
 
 namespace OldBard.Services.Match3.Grid

@@ -1888,7 +1888,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a54f4f8f7d28ed4198143141764b017, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tilesParent: {fileID: 1870389110}
   _tilesBackground: {fileID: 1694059464}
   _tilesBackgroundCollider: {fileID: 1694059465}
 --- !u!114 &1276745637
@@ -1949,7 +1948,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _config: {fileID: 11400000, guid: 58e461235d1fb734585d76fd87ac78a2, type: 2}
-  _gridSettings: {fileID: 11400000, guid: 5c4458c3ddd17864991a29c56e2aa523, type: 2}
+  _gridConfig: {fileID: 11400000, guid: 5c4458c3ddd17864991a29c56e2aa523, type: 2}
   _gridView: {fileID: 1276745635}
   _gameUIController: {fileID: 487677213}
   _inputManager: {fileID: 1276745637}

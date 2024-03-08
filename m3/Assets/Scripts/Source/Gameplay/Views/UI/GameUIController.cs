@@ -1,7 +1,7 @@
-﻿using OldBard.Match3.Gameplay.Views.Animations;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using OldBard.Services.Match3.Grid.Data;
+using OldBard.Services.Match3.Grid.View;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;

@@ -2,7 +2,7 @@
   "name": "com.oldbard.services.match3.grid",
   "rootNamespace": "OldBard.Services.Match3",
   "references": [
-	"Unity"
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using OldBard.Services.Match3.Grid;
 using TMPro;
 using UnityEngine;
 
-namespace OldBard.Match3.Gameplay.Views.Animations
+namespace OldBard.Services.Match3.Grid.View
 {
     public class AnimationsController
     {

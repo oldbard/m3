@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using OldBard.Match3.Gameplay.Views;
-using OldBard.Match3.Gameplay.Views.Animations;
 using OldBard.Match3.Gameplay.Views.UI;
 using OldBard.Services.Match3.Audio;
 using OldBard.Services.Match3.Factories;
 using OldBard.Services.Match3.Grid;
 using OldBard.Services.Match3.Grid.Data;
+using OldBard.Services.Match3.Grid.View;
 using UnityEngine;
 using UnityEngine.Pool;
 

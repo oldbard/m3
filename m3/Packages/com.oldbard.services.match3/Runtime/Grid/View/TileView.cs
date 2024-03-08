@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace OldBard.Services.Match3.Grid.Views
+namespace OldBard.Services.Match3.Grid.View
 {
     /// <summary>
     /// TilesView. Used to do set and modify the view of the tiles

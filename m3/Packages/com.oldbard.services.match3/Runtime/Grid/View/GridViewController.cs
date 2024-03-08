@@ -1,13 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using OldBard.Match3.Gameplay.Views.Animations;
-using OldBard.Services.Match3.Grid;
 using OldBard.Services.Match3.Grid.Data;
-using OldBard.Services.Match3.Grid.Views;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace OldBard.Match3.Gameplay.Views
+namespace OldBard.Services.Match3.Grid.View
 {
     /// <summary>
     /// GridViewController
