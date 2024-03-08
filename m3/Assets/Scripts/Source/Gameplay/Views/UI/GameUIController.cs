@@ -32,14 +32,14 @@ namespace OldBard.Match3.Gameplay.Views.UI
             _animationsController = animationsController;
         }
 
-        public void UpdateTimer(int seconds)
+        public void UpdateTimer(int totalSeconds)
         {
-            int minutes = (seconds % 3600) / 60;
-            seconds %= 60;
+            int minutes = (totalSeconds % 3600) / 60;
+            var seconds = totalSeconds % 60;
 
             _timer.SetText("Time Left: {0:00}:{1:00}", minutes, seconds);
 
-            if(_timerIsBlinking || seconds > _config.TimeToShowWarning + 1)
+            if(_timerIsBlinking || totalSeconds > _config.TimeToShowWarning + 1)
             {
                 return;
             }
