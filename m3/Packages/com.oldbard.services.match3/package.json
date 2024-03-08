@@ -1,0 +1,18 @@
+{
+    "name": "com.oldbard.services.match3",
+    "version": "0.0.1",
+    "displayName": "OldBard's Services: Match3",
+    "description": "Match3 Support Services",
+    "unity": "2021.3",
+    "hideInEditor" : false,
+    "dependencies": {
+    },
+   "keywords": [
+      "client",
+      "grid"
+    ],
+    "author": {
+      "name": "OldBard",
+      "url": ""
+    }
+  }

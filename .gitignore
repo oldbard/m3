@@ -61,3 +61,6 @@ crashlytics-build.properties
 m3/Library/
 m3/obj/
 m3/Temp/
+m3/Logs
+m3/UserSettings/EditorUserSettings.asset
+m3/.vsconfig

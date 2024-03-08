@@ -1,0 +1,126 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a323ec351a560744eb9bb5fd396969e6, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: 
+  _dragDetectionThreshold: 10
+  _dropAnimationTime: 0.5
+  _swapAnimationTime: 0.5
+  _destroyAnimationTime: 0.5
+  _hintAnimationTime: 0.5
+  _timeToShowHint: 10
+  _hintCycles: 3
+  _gameDuration: 20
+  _timeToShowWarning: 5
+  _startBlinkDelay: 500
+  _fullColorBlinkDelay: 200
+  _pointsPerTile: 10
+  _tileBackgroundPrefab: {fileID: 160020, guid: 561c8e1f04bbfa849a1538301dbab6a3,
+    type: 3}
+  _tilePrefab: {fileID: -2503264257950215645, guid: 1c9841a63fe5697459d56dde4153f031,
+    type: 3}
+  _tilesVariations: 2
+  _lerpAnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _tilesData:
+  - TileType: 0
+    ViewData:
+    - Body: {fileID: 21300008, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300000, guid: feb7791f42a400b4495ac2c50d1aad3e, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300008, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: f12f5a8356ce80b439d8a6ea5b41efcd, type: 3}
+      Animation: {fileID: 9100000, guid: 64ebde7c4183072478ac120b349e9196, type: 2}
+    - Body: {fileID: 21300010, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300000, guid: feb7791f42a400b4495ac2c50d1aad3e, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300010, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: f12f5a8356ce80b439d8a6ea5b41efcd, type: 3}
+      Animation: {fileID: 9100000, guid: 77b882fcf52e2064492ae16049f31b70, type: 2}
+  - TileType: 1
+    ViewData:
+    - Body: {fileID: 21300004, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300000, guid: bb1140fb33a31cd4a8605d4dd285ddc5, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300004, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: f2475b867d92200488d50e02312e3cae, type: 3}
+      Animation: {fileID: 9100000, guid: 5bc9e8a49d608014e9c27c8f03f02912, type: 2}
+    - Body: {fileID: 21300006, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300000, guid: bb1140fb33a31cd4a8605d4dd285ddc5, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300006, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: f2475b867d92200488d50e02312e3cae, type: 3}
+      Animation: {fileID: 9100000, guid: 3bfd9f130d6822e46acea15e97983c15, type: 2}
+  - TileType: 2
+    ViewData:
+    - Body: {fileID: 21300016, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300000, guid: 1cc9b4afe0190c0438150d896347d8f3, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300016, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: 398ee0f95475148448c2931e923daa83, type: 3}
+      Animation: {fileID: 9100000, guid: b59ab9a3fd11c88469ddbdf38c2dde4a, type: 2}
+    - Body: {fileID: 21300018, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300008, guid: db81e4b67f1c7004082e7ab26436a393, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300018, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: 398ee0f95475148448c2931e923daa83, type: 3}
+      Animation: {fileID: 9100000, guid: 164d816af839a5d48bae4cf5c8febd32, type: 2}
+  - TileType: 3
+    ViewData:
+    - Body: {fileID: 21300000, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300000, guid: 87ca0098775ae6e4ca0a8b28fba4a892, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300000, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: 398ee0f95475148448c2931e923daa83, type: 3}
+      Animation: {fileID: 9100000, guid: ee79d33cdc161234782eb3a82337d7b9, type: 2}
+    - Body: {fileID: 21300002, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300000, guid: 87ca0098775ae6e4ca0a8b28fba4a892, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300002, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: 398ee0f95475148448c2931e923daa83, type: 3}
+      Animation: {fileID: 9100000, guid: 5b988435c07fb0c4b820c44bfcbfaa59, type: 2}
+  - TileType: 4
+    ViewData:
+    - Body: {fileID: 21300012, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300008, guid: db81e4b67f1c7004082e7ab26436a393, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300012, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: 5db165493ae2bda4ba0ed395dc464648, type: 3}
+      Animation: {fileID: 9100000, guid: 440de2521aefa744fafdc7ab2f7d251e, type: 2}
+    - Body: {fileID: 21300014, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Eye: {fileID: 21300008, guid: db81e4b67f1c7004082e7ab26436a393, type: 3}
+      Mouth: {fileID: 21300000, guid: 2498b83b05df0bb47a43231ae453ffec, type: 3}
+      Shadow: {fileID: 21300014, guid: 51e2a399831333b478ec978ee598bf0e, type: 3}
+      Selected: {fileID: 21300000, guid: 5db165493ae2bda4ba0ed395dc464648, type: 3}
+      Animation: {fileID: 9100000, guid: 971bf437a360d364f9dfae6009e20ee9, type: 2}

@@ -1,0 +1,17 @@
+{
+  "name": "com.oldbard.match3.meta",
+  "rootNamespace": "OldBard.Match3",
+  "references": [
+	"com.oldbard.services.match3.grid",
+	"Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

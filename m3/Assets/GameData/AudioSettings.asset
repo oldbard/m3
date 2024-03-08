@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f8c1f5e0125efc4db98c6a0a0b08a00, type: 3}
+  m_Name: AudioSettings
+  m_EditorClassIdentifier: 
+  _bgms:
+  - {fileID: 8300000, guid: 62bdfb8ea2338034a86638fd407a9251, type: 3}
+  - {fileID: 8300000, guid: 04f95ddf886752448bbf6f6e35fa756f, type: 3}
+  - {fileID: 8300000, guid: 080063285cbebc54c889476ded654183, type: 3}
+  - {fileID: 8300000, guid: e2b8e48b56586054a88cc64ed099a61f, type: 3}
+  GameOverSound: {fileID: 8300000, guid: cf3291b7346dd604dbfa69186adc9540, type: 3}
+  GameOverHighScoreSound: {fileID: 8300000, guid: 63354c465446f964d822e667fe255f02,
+    type: 3}
+  SwapSound: {fileID: 8300000, guid: 1585b9aa087e8a34199490fa2b7a6a13, type: 3}
+  MatchSound: {fileID: 8300000, guid: fb41515088093714c8a1f11dd0f7c069, type: 3}
+  TimeoutSound: {fileID: 8300000, guid: 7cd61d5db60ec204e9d73d42d5bfd41b, type: 3}
