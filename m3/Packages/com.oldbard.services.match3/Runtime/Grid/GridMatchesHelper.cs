@@ -48,10 +48,10 @@ namespace OldBard.Services.Match3.Grid
 
                         possibleMatches.Clear();
 
-                        FillVerticalMatchesPair(tile, possibleMatchTiles);
-                        if(possibleMatchTiles.Count > 1)
+                        FillVerticalMatchesPair(tile, possibleMatches);
+                        if(possibleMatches.Count > 1)
                         {
-                            TileInstance changedTile = CreateVerticalPreMatch(possibleMatchTiles);
+                            TileInstance changedTile = CreateVerticalPreMatch(possibleMatches);
                             possibleMatchTiles.Add(changedTile);
 
                             return;
@@ -120,10 +120,7 @@ namespace OldBard.Services.Match3.Grid
                 }
                 else
                 {
-                    if (tile2.PosY > 0)
-                    {
-                        targetY = tile2.PosY > 0 ? tile2.PosY - 1 : tile2.PosY + 1;
-                    }
+                    targetY = tile2.PosY > 0 ? tile2.PosY - 1 : tile2.PosY + 1;
                     targetX = tile2.PosX + 1;
                 }
             }
@@ -171,10 +168,7 @@ namespace OldBard.Services.Match3.Grid
                 }
                 else
                 {
-                    if (tile2.PosX > 0)
-                    {
-                        targetX = tile2.PosX > 0 ? tile2.PosX - 1 : tile2.PosX + 1;
-                    }
+                    targetX = tile2.PosX > 0 ? tile2.PosX - 1 : tile2.PosX + 1;
                     targetY = tile2.PosY + 1;
                 }
             }
@@ -347,15 +341,13 @@ namespace OldBard.Services.Match3.Grid
                 tiles.Add(tile);
                 tiles.Add(curTile);
             }
+
             curTile = _gridService[tile.PosX - 2, tile.PosY];
-
-            if(curTile == null || (curTile.TileType != tile.TileType))
+            if(curTile?.TileType == tile.TileType)
             {
-                return;
+                tiles.Add(tile);
+                tiles.Add(curTile);
             }
-
-            tiles.Add(tile);
-            tiles.Add(curTile);
         }
 
         void FillVerticalMatchesPair(TileInstance tile, List<TileInstance> tiles)
@@ -383,15 +375,13 @@ namespace OldBard.Services.Match3.Grid
                 tiles.Add(tile);
                 tiles.Add(curTile);
             }
+
             curTile = _gridService[tile.PosX, tile.PosY - 2];
-
-            if(curTile == null || (curTile.TileType != tile.TileType))
+            if(curTile?.TileType == tile.TileType)
             {
-                return;
+                tiles.Add(tile);
+                tiles.Add(curTile);
             }
-
-            tiles.Add(tile);
-            tiles.Add(curTile);
         }
 
         public bool TryGetMatches(List<TileInstance> matches)
