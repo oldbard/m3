@@ -16,7 +16,6 @@ namespace OldBard.Services.Match3.Grid
 
         readonly GridModel _gridModel;
         readonly GridMatchesHelper _gridMatchesHelper;
-        readonly GridMatchesValidator _gridMatchesValidator;
 
         readonly int _tilesVariations;
         readonly Random _random;
@@ -68,7 +67,6 @@ namespace OldBard.Services.Match3.Grid
 
             _gridModel = new GridModel(width, height);
             _gridMatchesHelper = new GridMatchesHelper(this, variations, randomSeed);
-            _gridMatchesValidator = new GridMatchesValidator(width, height);
 
             _gridOffset = new Vector3(-((GridWidth - 1) * 0.5f), -((GridHeight - 1) * 0.5f), 0f);
             _tilesVariations = variations;
@@ -205,7 +203,7 @@ namespace OldBard.Services.Match3.Grid
         /// <returns>True if there is a possible match</returns>
         public bool GetFirstPossibleMatch(List<TileInstance> tiles)
         {
-            return _gridMatchesValidator.GetPreMatch(Tiles, tiles);
+            return _gridMatchesHelper.GetPreMatch(Tiles, tiles);
         }
 
         /// <summary>
