@@ -2,7 +2,6 @@
   "name": "com.oldbard.services.match3.audio",
   "rootNamespace": "OldBard.Services.Match3",
   "references": [
-	"Unity"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

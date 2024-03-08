@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace OldBard.Services.Match3.Grid.Data
+namespace OldBard.Services.Match3.Grid.Tiles.Data
 {
     /// <summary>
     /// Struct to hold view information for the Tiles creation

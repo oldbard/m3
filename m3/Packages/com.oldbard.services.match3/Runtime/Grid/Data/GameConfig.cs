@@ -1,7 +1,8 @@
-﻿using OldBard.Services.Match3.Grid.View;
+﻿using OldBard.Services.Match3.Grid.Tiles.Data;
+using OldBard.Services.Match3.Grid.Tiles.View;
 using UnityEngine;
 
-namespace OldBard.Services.Match3.Grid.Data
+namespace OldBard.Services.Match3.Config.Data
 {
     /// <summary>
     /// Game Configuration

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using OldBard.Services.Match3.Factories;
+using OldBard.Services.Match3.Grid.Tiles.Data;
+using OldBard.Services.Match3.Grid.Tiles.Factories;
 using UnityEngine;
 using UnityEngine.Pool;
 using Random = System.Random;

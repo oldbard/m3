@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using OldBard.Services.Match3.Grid.Data;
+using OldBard.Services.Match3.Config.Data;
+using OldBard.Services.Match3.Grid.Tiles.Data;
+using OldBard.Services.Match3.Grid.Tiles.View;
 using UnityEngine;
 using UnityEngine.Pool;
 

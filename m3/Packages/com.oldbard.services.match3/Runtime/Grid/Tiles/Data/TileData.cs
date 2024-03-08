@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OldBard.Services.Match3.Grid.Data
+namespace OldBard.Services.Match3.Grid.Tiles.Data
 {
     /// <summary>
     /// Struct to hold the Tiles possible configurations

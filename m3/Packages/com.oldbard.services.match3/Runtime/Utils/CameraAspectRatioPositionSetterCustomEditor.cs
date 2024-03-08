@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace OldBard.Services.Utils
+namespace OldBard.Services.Match3.Utils
 {
 	[CustomEditor(typeof(CameraAspectRatioPositionSetter))]
 	public class CameraAspectRatioPositionSetterCustomEditor : Editor

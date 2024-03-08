@@ -1,4 +1,4 @@
-﻿namespace OldBard.Services.Match3.Grid
+﻿namespace OldBard.Services.Match3.Grid.Tiles.Data
 {
     /// <summary>
     /// Enumeration of the available Tile Types

@@ -1,9 +1,8 @@
 {
-  "name": "com.oldbard.services.utils",
-  "rootNamespace": "OldBard.Services.Utils",
+  "name": "com.oldbard.services.match3.utils",
+  "rootNamespace": "OldBard.Services.Match3",
   "references": [
-	"Unity.TextMeshPro",
-	"Unity"
+	"Unity.TextMeshPro"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

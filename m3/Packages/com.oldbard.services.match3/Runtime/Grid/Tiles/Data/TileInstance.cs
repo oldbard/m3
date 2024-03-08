@@ -1,7 +1,7 @@
-﻿using OldBard.Services.Match3.Grid.View;
+﻿using OldBard.Services.Match3.Grid.Tiles.View;
 using UnityEngine;
 
-namespace OldBard.Services.Match3.Grid
+namespace OldBard.Services.Match3.Grid.Tiles.Data
 {
 	/// <summary>
 	/// Class which represents a Tile from the grid

@@ -1,9 +1,10 @@
-﻿using OldBard.Services.Match3.Grid.Data;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using OldBard.Services.Match3.Config.Data;
+using OldBard.Services.Match3.Grid.Tiles.Data;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace OldBard.Services.Match3.Grid.View
+namespace OldBard.Services.Match3.Grid.Tiles.View
 {
     /// <summary>
     /// TilesView. Used to do set and modify the view of the tiles

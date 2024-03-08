@@ -1,6 +1,6 @@
-﻿using OldBard.Services.Match3.Grid;
+﻿using OldBard.Services.Match3.Config.Data;
+using OldBard.Services.Match3.Grid;
 using System;
-using OldBard.Services.Match3.Grid.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;

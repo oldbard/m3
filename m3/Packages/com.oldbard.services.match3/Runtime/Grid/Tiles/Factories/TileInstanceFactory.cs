@@ -1,10 +1,10 @@
-﻿using OldBard.Services.Match3.Grid;
-using OldBard.Services.Match3.Grid.Data;
-using OldBard.Services.Match3.Grid.View;
+﻿using OldBard.Services.Match3.Config.Data;
+using OldBard.Services.Match3.Grid.Tiles.Data;
+using OldBard.Services.Match3.Grid.Tiles.View;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace OldBard.Services.Match3.Factories
+namespace OldBard.Services.Match3.Grid.Tiles.Factories
 {
 	/// <summary>
 	/// Factory to generate TileInstance objects. Uses Unity's IObjectPool to handle the instances.
