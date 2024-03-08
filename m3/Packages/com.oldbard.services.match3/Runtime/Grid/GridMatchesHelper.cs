@@ -37,10 +37,10 @@ namespace OldBard.Services.Match3.Grid
 
                         possibleMatches.Clear();
 
-                        FillHorizontalMatchesPair(tile, possibleMatches);
+                        FillMatchesPair(tile, possibleMatches, true);
                         if(possibleMatches.Count > 1)
                         {
-                            TileInstance changedTile = CreateHorizontalPreMatch(possibleMatches);
+                            TileInstance changedTile = CreatePreMatch(possibleMatches);
                             possibleMatchTiles.Add(changedTile);
 
                             return;
@@ -48,10 +48,10 @@ namespace OldBard.Services.Match3.Grid
 
                         possibleMatches.Clear();
 
-                        FillVerticalMatchesPair(tile, possibleMatches);
+                        FillMatchesPair(tile, possibleMatches, false);
                         if(possibleMatches.Count > 1)
                         {
-                            TileInstance changedTile = CreateVerticalPreMatch(possibleMatches);
+                            TileInstance changedTile = CreatePreMatch(possibleMatches);
                             possibleMatchTiles.Add(changedTile);
 
                             return;
@@ -83,93 +83,70 @@ namespace OldBard.Services.Match3.Grid
 
             Debug.Log($"Found a pre match! Set tile at {0}, {targetY} to {tile.TileType}");
         }
-
-        TileInstance CreateHorizontalPreMatch(List<TileInstance> tiles)
+        
+        (TileInstance, TileInstance) OrderTilesByCoordinate(TileInstance tile1, TileInstance tile2, int coord1, int coord2)
         {
-            TileInstance tile1 = tiles[0];
-            TileInstance tile2 = tiles[1];
-
-            var targetX = 0;
-            var targetY = tile1.PosY;
-
-            if (tile1.PosX > tile2.PosX)
-            {
-                (tile2, tile1) = (tile1, tile2);
-            }
-
-            if (tile2.PosX - tile1.PosX > 1)
-            {
-                if (tile2.PosX < _gridService.GridWidth - 1)
-                {
-                    targetX = tile2.PosX + 1;
-                }
-                else
-                {
-                    targetX = tile1.PosX - 1;
-                }
-            }
-            else
-            {
-                if (tile2.PosX + 2 < _gridService.GridWidth - 1)
-                {
-                    targetX = tile2.PosX + 2;
-                }
-                else if (tile1.PosX - 2 >= 0)
-                {
-                    targetX = tile1.PosX - 2;
-                }
-                else
-                {
-                    targetY = tile2.PosY > 0 ? tile2.PosY - 1 : tile2.PosY + 1;
-                    targetX = tile2.PosX + 1;
-                }
-            }
-
-            TileInstance tile = _gridService[targetX, targetY];
-            Debug.Log($"Found a pre match! Set tile at {targetX}, {targetY} to {tile1.TileType}");
-            tile.SetTileType(tile1.TileType);
-
-            return tile;
+            return coord1 > coord2 ? (tile2, tile1) : (tile1, tile2);
         }
 
-        TileInstance CreateVerticalPreMatch(List<TileInstance> tiles)
+        TileInstance CreatePreMatch(List<TileInstance> tiles)
         {
             TileInstance tile1 = tiles[0];
             TileInstance tile2 = tiles[1];
 
-            var targetX = tile1.PosX;
-            var targetY = 0;
+            bool horizontal = tile1.PosY == tile2.PosY;
+            int length = horizontal ? _gridService.GridWidth : _gridService.GridHeight;
 
-            if (tile1.PosY > tile2.PosY)
-            {
-                (tile2, tile1) = (tile1, tile2);
-            }
+            int targetX;
+            int targetY;;
 
-            if (tile2.PosY - tile1.PosY > 1)
+            var coord1 = horizontal ? tile1.PosX : tile1.PosY;
+            var coord2 = horizontal ? tile2.PosX : tile2.PosY;
+
+            (tile1, tile2) = OrderTilesByCoordinate(tile1, tile2, coord1, coord2);
+			
+            coord1 = horizontal ? tile1.PosX : tile1.PosY;
+            coord2 = horizontal ? tile2.PosX : tile2.PosY;
+
+            var otherCoord = horizontal ? tile2.PosY : tile2.PosX;
+
+            if(coord2 - coord1 > 1)
             {
-                if (tile2.PosY < _gridService.GridHeight - 1)
+                if(coord2 < length - 1)
                 {
-                    targetY = tile2.PosY + 1;
+                    targetX = horizontal ? coord2 + 1 : tile1.PosX;
+                    targetY = horizontal ? tile1.PosY : coord2 + 1;
                 }
                 else
                 {
-                    targetY = tile1.PosY - 1;
+                    targetX = horizontal ? coord2 - 1 : tile1.PosX;
+                    targetY = horizontal ? tile1.PosY : coord2 - 1;
                 }
             }
             else
             {
-                if (tile2.PosY + 2 < _gridService.GridHeight - 1)
+                if(coord2 + 2 < length - 1)
                 {
-                    targetY = tile2.PosY + 2;
+                    targetX = horizontal ? coord2 + 2 : tile1.PosX;
+                    targetY = horizontal ? tile1.PosY : coord2 + 2;
                 }
-                else if (tile1.PosY - 2 >= 0)
+                else if(coord1 - 2 >= 0)
                 {
-                    targetY = tile1.PosY - 2;
+                    targetX = horizontal ? coord1 - 2 : tile1.PosX;
+                    targetY = horizontal ? tile1.PosY : coord1 - 2;
                 }
                 else
                 {
-                    targetX = tile2.PosX > 0 ? tile2.PosX - 1 : tile2.PosX + 1;
-                    targetY = tile2.PosY + 1;
+                    if(horizontal)
+                    {
+                        targetX = coord2 + 1;
+                        targetY = otherCoord > 0 ? otherCoord - 1 : otherCoord + 1;
+                    }
+                    else
+                    {
+                        targetX = otherCoord > 0 ? otherCoord - 1 : otherCoord + 1;
+                        targetY = coord2 + 1;
+                    }
                 }
             }
 
@@ -191,14 +168,14 @@ namespace OldBard.Services.Match3.Grid
 
             using(ListPool<TileInstance>.Get(out List<TileInstance> foundTiles))
             {
-                if(FillHorizontalMatch(tile, foundTiles))
+                if(FillMatch(tile, foundTiles, true))
                 {
                     AddUniqueOnly(foundTiles, tiles);
                     foundMatches = true;
                 }
                 foundTiles.Clear();
 
-                if(FillVerticalMatch(tile, foundTiles))
+                if(FillMatch(tile, foundTiles, false))
                 {
                     AddUniqueOnly(foundTiles, tiles);
                     foundMatches = true;
@@ -226,17 +203,22 @@ namespace OldBard.Services.Match3.Grid
         }
 
         /// <summary>
-        /// Looks left and right to get a Horizontal Match
+        /// Looks for a Match
         /// </summary>
         /// <param name="tile">The tile candidate of the match</param>
         /// <param name="tiles">TileInstances container</param>
-        bool FillHorizontalMatch(TileInstance tile, List<TileInstance> tiles)
+        /// <param name="horizontal">Whether it should check for horizontal matches or not</param>
+        /// <returns>Returns whether it found any match or not</returns>
+        bool FillMatch(TileInstance tile, List<TileInstance> tiles, bool horizontal)
         {
-            // Look right
-            for (var i = tile.PosX + 1; i < _gridService.GridWidth; i++)
+            int length = horizontal ? _gridService.GridWidth : _gridService.GridHeight;
+            int coord1 = horizontal ? tile.PosX : tile.PosY;
+            int coord2 = horizontal ? tile.PosY : tile.PosX;
+
+            // Look right or up
+            for (var i = coord1 + 1; i < length; i++)
             {
-                TileInstance curTile = _gridService[i, tile.PosY];
-                if (curTile.TileType == tile.TileType)
+                if(TryGetMatchTile(tile.TileType, coord2, i, horizontal, out TileInstance curTile))
                 {
                     tiles.Add(curTile);
                 }
@@ -246,11 +228,10 @@ namespace OldBard.Services.Match3.Grid
                 }
             }
 
-            // Look left
-            for (var i = tile.PosX - 1; i >= 0; i--)
+            // Look left or down
+            for (var i = coord1 - 1; i >= 0; i--)
             {
-                TileInstance curTile = _gridService[i, tile.PosY];
-                if (curTile.TileType == tile.TileType)
+                if(TryGetMatchTile(tile.TileType, coord2, i, horizontal, out TileInstance curTile))
                 {
                     tiles.Add(curTile);
                 }
@@ -268,122 +249,66 @@ namespace OldBard.Services.Match3.Grid
             tiles.Clear();
 
             return false;
+        }
 
+        bool TryGetMatchTile(TileType tileType, int coordinate, int index, bool horizontal, out TileInstance tileInstance)
+        {
+            int x = horizontal ? index : coordinate;
+            int y = horizontal ? coordinate : index;
+
+            tileInstance = _gridService[x, y];
+            return tileInstance.TileType == tileType;
+        }
+
+        void FillMatchesPair(TileInstance tile, List<TileInstance> tiles, bool horizontal)
+        {
+            int x = horizontal ? tile.PosX + 1 : tile.PosX;
+            int y = horizontal ? tile.PosY : tile.PosY + 1;
+
+            TileInstance curTile = _gridService[x, y];
+            if (curTile?.TileType == tile.TileType)
+            {
+                tiles.Add(tile);
+                tiles.Add(curTile);
+
+                return;
+            }
+			
+            x = horizontal ? tile.PosX + 2 : tile.PosX;
+            y = horizontal ? tile.PosY : tile.PosY + 2;
+            curTile = _gridService[x, y];
+            if (curTile?.TileType == tile.TileType)
+            {
+                tiles.Add(tile);
+                tiles.Add(curTile);
+
+                return;
+            }
+
+            x = horizontal ? tile.PosX - 1 : tile.PosX;
+            y = horizontal ? tile.PosY : tile.PosY - 1;
+            curTile = _gridService[x, y];
+            if (curTile?.TileType == tile.TileType)
+            {
+                tiles.Add(tile);
+                tiles.Add(curTile);
+            }
+
+            x = horizontal ? tile.PosX - 2 : tile.PosX;
+            y = horizontal ? tile.PosY : tile.PosY - 2;
+            curTile = _gridService[x, y];
+            if(curTile?.TileType == tile.TileType)
+            {
+                tiles.Add(tile);
+                tiles.Add(curTile);
+            }
         }
 
         /// <summary>
-        /// Looks up and down to get a Vertical Match
+        /// Tries to get all matches in the grid
         /// </summary>
-        /// <param name="tile">The tile candidate of the match</param>
-        /// <param name="tiles">TileInstances container</param>
-        bool FillVerticalMatch(TileInstance tile, List<TileInstance> tiles)
-        {
-            // Look Up
-            for (var i = tile.PosY + 1; i < _gridService.GridHeight; i++)
-            {
-                TileInstance curTile = _gridService[tile.PosX, i];
-                if (curTile.TileType == tile.TileType)
-                {
-                    tiles.Add(curTile);
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            // Look Down
-            for (var i = tile.PosY - 1; i >= 0; i--)
-            {
-                TileInstance curTile = _gridService[tile.PosX, i];
-                if (curTile.TileType == tile.TileType)
-                {
-                    tiles.Add(curTile);
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            if(tiles.Count >= 2)
-            {
-                return true;
-            }
-
-            tiles.Clear();
-
-            return false;
-        }
-
-        void FillHorizontalMatchesPair(TileInstance tile, List<TileInstance> tiles)
-        {
-            TileInstance curTile = _gridService[tile.PosX + 1, tile.PosY];
-            if (curTile?.TileType == tile.TileType)
-            {
-                tiles.Add(tile);
-                tiles.Add(curTile);
-
-                return;
-            }
-            curTile = _gridService[tile.PosX + 2, tile.PosY];
-            if (curTile?.TileType == tile.TileType)
-            {
-                tiles.Add(tile);
-                tiles.Add(curTile);
-
-                return;
-            }
-
-            curTile = _gridService[tile.PosX - 1, tile.PosY];
-            if (curTile?.TileType == tile.TileType)
-            {
-                tiles.Add(tile);
-                tiles.Add(curTile);
-            }
-
-            curTile = _gridService[tile.PosX - 2, tile.PosY];
-            if(curTile?.TileType == tile.TileType)
-            {
-                tiles.Add(tile);
-                tiles.Add(curTile);
-            }
-        }
-
-        void FillVerticalMatchesPair(TileInstance tile, List<TileInstance> tiles)
-        {
-            TileInstance curTile = _gridService[tile.PosX, tile.PosY + 1];
-            if (curTile?.TileType == tile.TileType)
-            {
-                tiles.Add(tile);
-                tiles.Add(curTile);
-
-                return;
-            }
-            curTile = _gridService[tile.PosX, tile.PosY + 2];
-            if (curTile?.TileType == tile.TileType)
-            {
-                tiles.Add(tile);
-                tiles.Add(curTile);
-
-                return;
-            }
-
-            curTile = _gridService[tile.PosX, tile.PosY - 1];
-            if (curTile?.TileType == tile.TileType)
-            {
-                tiles.Add(tile);
-                tiles.Add(curTile);
-            }
-
-            curTile = _gridService[tile.PosX, tile.PosY - 2];
-            if(curTile?.TileType == tile.TileType)
-            {
-                tiles.Add(tile);
-                tiles.Add(curTile);
-            }
-        }
-
+        /// <param name="matches"></param>
+        /// <returns>Returns whether it found any match or not</returns>
         public bool TryGetMatches(List<TileInstance> matches)
         {
             for (var x = 0; x < _gridService.GridWidth; x++)
